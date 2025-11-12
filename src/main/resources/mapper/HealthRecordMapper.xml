@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zk.generator.mapper.HealthRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.zk.petclinic.domain.HealthRecord">
+            <id property="id" column="id" />
+            <result property="pet_id" column="pet_id" />
+            <result property="record_type" column="record_type" />
+            <result property="title" column="title" />
+            <result property="content" column="content" />
+            <result property="record_date" column="record_date" />
+            <result property="next_date" column="next_date" />
+            <result property="create_time" column="create_time" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,pet_id,record_type,title,content,record_date,
+        next_date,create_time
+    </sql>
+</mapper>
