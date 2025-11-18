@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +20,25 @@ import java.util.Map;
 public class SysUserController {
     @Autowired
     private SysUserService sysUserService;
+
+    @PostMapping("/register")
+    public ResultUtil<String> register(@Validated @RequestBody SysUser sysUser) {
+        SysUser existingUser = sysUserService.findByUserName(sysUser.getUsername());
+        if (existingUser != null) {
+            return ResultUtil.fail("用户名已存在");
+        }
+        sysUser.setId(null);
+        sysUser.setCreateTime(new Date());
+        sysUser.setUpdateTime(new Date());
+        if (sysUser.getStatus() == null) {
+            sysUser.setStatus(1);
+        }
+        boolean saved = sysUserService.save(sysUser);
+        if (!saved) {
+            return ResultUtil.fail("注册失败，请稍后再试");
+        }
+        return ResultUtil.success("注册成功");
+    }
 
     @PostMapping("/login")
     public ResultUtil<Map<String, Object>> login(@Validated @RequestBody SysUser sysUser) {
