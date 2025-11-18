@@ -24,25 +24,25 @@ public class Appointment {
      * 宠物ID
      */
     @TableField(value = "pet_id")
-    private Long pet_id;
+    private Long petId;
 
     /**
      * 服务商ID
      */
     @TableField(value = "provider_id")
-    private Long provider_id;
+    private Long providerId;
 
     /**
      * 服务类型
      */
     @TableField(value = "service_type")
-    private String service_type;
+    private String serviceType;
 
     /**
      * 预约时间
      */
     @TableField(value = "appointment_time")
-    private Date appointment_time;
+    private Date appointmentTime;
 
     /**
      * 状态：0-待确认，1-已预约，2-已完成，3-已取消
@@ -60,7 +60,7 @@ public class Appointment {
      * 
      */
     @TableField(value = "create_time")
-    private Date create_time;
+    private Date createTime;
 
     @Override
     public boolean equals(Object that) {
@@ -75,13 +75,13 @@ public class Appointment {
         }
         Appointment other = (Appointment) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getPet_id() == null ? other.getPet_id() == null : this.getPet_id().equals(other.getPet_id()))
-            && (this.getProvider_id() == null ? other.getProvider_id() == null : this.getProvider_id().equals(other.getProvider_id()))
-            && (this.getService_type() == null ? other.getService_type() == null : this.getService_type().equals(other.getService_type()))
-            && (this.getAppointment_time() == null ? other.getAppointment_time() == null : this.getAppointment_time().equals(other.getAppointment_time()))
+            && (this.getPetId() == null ? other.getPetId() == null : this.getPetId().equals(other.getPetId()))
+            && (this.getProviderId() == null ? other.getProviderId() == null : this.getProviderId().equals(other.getProviderId()))
+            && (this.getServiceType() == null ? other.getServiceType() == null : this.getServiceType().equals(other.getServiceType()))
+            && (this.getAppointmentTime() == null ? other.getAppointmentTime() == null : this.getAppointmentTime().equals(other.getAppointmentTime()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
             && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
-            && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()));
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()));
     }
 
     @Override
@@ -89,13 +89,13 @@ public class Appointment {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getPet_id() == null) ? 0 : getPet_id().hashCode());
-        result = prime * result + ((getProvider_id() == null) ? 0 : getProvider_id().hashCode());
-        result = prime * result + ((getService_type() == null) ? 0 : getService_type().hashCode());
-        result = prime * result + ((getAppointment_time() == null) ? 0 : getAppointment_time().hashCode());
+        result = prime * result + ((getPetId() == null) ? 0 : getPetId().hashCode());
+        result = prime * result + ((getProviderId() == null) ? 0 : getProviderId().hashCode());
+        result = prime * result + ((getServiceType() == null) ? 0 : getServiceType().hashCode());
+        result = prime * result + ((getAppointmentTime() == null) ? 0 : getAppointmentTime().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
         result = prime * result + ((getRemark() == null) ? 0 : getRemark().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         return result;
     }
 
@@ -106,13 +106,13 @@ public class Appointment {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", pet_id=").append(pet_id);
-        sb.append(", provider_id=").append(provider_id);
-        sb.append(", service_type=").append(service_type);
-        sb.append(", appointment_time=").append(appointment_time);
+        sb.append(", petId=").append(petId);
+        sb.append(", providerId=").append(providerId);
+        sb.append(", serviceType=").append(serviceType);
+        sb.append(", appointmentTime=").append(appointmentTime);
         sb.append(", status=").append(status);
         sb.append(", remark=").append(remark);
-        sb.append(", create_time=").append(create_time);
+        sb.append(", createTime=").append(createTime);
         sb.append("]");
         return sb.toString();
     }

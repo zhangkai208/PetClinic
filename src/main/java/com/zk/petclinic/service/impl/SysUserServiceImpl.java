@@ -1,5 +1,6 @@
 package com.zk.petclinic.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zk.petclinic.domain.SysUser;
 import com.zk.petclinic.service.SysUserService;
@@ -17,7 +18,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
 
     @Override
     public SysUser findByUserName(String username) {
-        return null;
+        QueryWrapper<SysUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username", username);
+        return this.getOne(queryWrapper);
     }
 }
 

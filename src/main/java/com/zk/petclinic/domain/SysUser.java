@@ -60,7 +60,7 @@ public class SysUser {
      * 角色类型：1-宠物主人，2-服务商，3-管理员
      */
     @TableField(value = "role_type")
-    private Integer role_type;
+    private Integer roleType;
 
     /**
      * 状态：0-禁用，1-启用
@@ -72,13 +72,13 @@ public class SysUser {
      * 
      */
     @TableField(value = "create_time")
-    private Date create_time;
+    private Date createTime;
 
     /**
      * 
      */
     @TableField(value = "update_time")
-    private Date update_time;
+    private Date updateTime;
 
     @Override
     public boolean equals(Object that) {
@@ -99,10 +99,10 @@ public class SysUser {
             && (this.getPhone() == null ? other.getPhone() == null : this.getPhone().equals(other.getPhone()))
             && (this.getEmail() == null ? other.getEmail() == null : this.getEmail().equals(other.getEmail()))
             && (this.getAvatar() == null ? other.getAvatar() == null : this.getAvatar().equals(other.getAvatar()))
-            && (this.getRole_type() == null ? other.getRole_type() == null : this.getRole_type().equals(other.getRole_type()))
+            && (this.getRoleType() == null ? other.getRoleType() == null : this.getRoleType().equals(other.getRoleType()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()))
-            && (this.getUpdate_time() == null ? other.getUpdate_time() == null : this.getUpdate_time().equals(other.getUpdate_time()));
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
     }
 
     @Override
@@ -116,10 +116,10 @@ public class SysUser {
         result = prime * result + ((getPhone() == null) ? 0 : getPhone().hashCode());
         result = prime * result + ((getEmail() == null) ? 0 : getEmail().hashCode());
         result = prime * result + ((getAvatar() == null) ? 0 : getAvatar().hashCode());
-        result = prime * result + ((getRole_type() == null) ? 0 : getRole_type().hashCode());
+        result = prime * result + ((getRoleType() == null) ? 0 : getRoleType().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
-        result = prime * result + ((getUpdate_time() == null) ? 0 : getUpdate_time().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         return result;
     }
 
@@ -136,10 +136,10 @@ public class SysUser {
         sb.append(", phone=").append(phone);
         sb.append(", email=").append(email);
         sb.append(", avatar=").append(avatar);
-        sb.append(", role_type=").append(role_type);
+        sb.append(", roleType=").append(roleType);
         sb.append(", status=").append(status);
-        sb.append(", create_time=").append(create_time);
-        sb.append(", update_time=").append(update_time);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", updateTime=").append(updateTime);
         sb.append("]");
         return sb.toString();
     }

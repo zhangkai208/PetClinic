@@ -24,13 +24,13 @@ public class HealthRecord {
      * 
      */
     @TableField(value = "pet_id")
-    private Long pet_id;
+    private Long petId;
 
     /**
      * 记录类型：1-疫苗，2-驱虫，3-用药，4-健康笔记
      */
     @TableField(value = "record_type")
-    private Integer record_type;
+    private Integer recordType;
 
     /**
      * 标题
@@ -48,19 +48,19 @@ public class HealthRecord {
      * 记录日期
      */
     @TableField(value = "record_date")
-    private Date record_date;
+    private Date recordDate;
 
     /**
      * 下次提醒日期（疫苗、驱虫）
      */
     @TableField(value = "next_date")
-    private Date next_date;
+    private Date nextDate;
 
     /**
      * 
      */
     @TableField(value = "create_time")
-    private Date create_time;
+    private Date createTime;
 
     @Override
     public boolean equals(Object that) {
@@ -75,13 +75,13 @@ public class HealthRecord {
         }
         HealthRecord other = (HealthRecord) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getPet_id() == null ? other.getPet_id() == null : this.getPet_id().equals(other.getPet_id()))
-            && (this.getRecord_type() == null ? other.getRecord_type() == null : this.getRecord_type().equals(other.getRecord_type()))
+            && (this.getPetId() == null ? other.getPetId() == null : this.getPetId().equals(other.getPetId()))
+            && (this.getRecordType() == null ? other.getRecordType() == null : this.getRecordType().equals(other.getRecordType()))
             && (this.getTitle() == null ? other.getTitle() == null : this.getTitle().equals(other.getTitle()))
             && (this.getContent() == null ? other.getContent() == null : this.getContent().equals(other.getContent()))
-            && (this.getRecord_date() == null ? other.getRecord_date() == null : this.getRecord_date().equals(other.getRecord_date()))
-            && (this.getNext_date() == null ? other.getNext_date() == null : this.getNext_date().equals(other.getNext_date()))
-            && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()));
+            && (this.getRecordDate() == null ? other.getRecordDate() == null : this.getRecordDate().equals(other.getRecordDate()))
+            && (this.getNextDate() == null ? other.getNextDate() == null : this.getNextDate().equals(other.getNextDate()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()));
     }
 
     @Override
@@ -89,13 +89,13 @@ public class HealthRecord {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getPet_id() == null) ? 0 : getPet_id().hashCode());
-        result = prime * result + ((getRecord_type() == null) ? 0 : getRecord_type().hashCode());
+        result = prime * result + ((getPetId() == null) ? 0 : getPetId().hashCode());
+        result = prime * result + ((getRecordType() == null) ? 0 : getRecordType().hashCode());
         result = prime * result + ((getTitle() == null) ? 0 : getTitle().hashCode());
         result = prime * result + ((getContent() == null) ? 0 : getContent().hashCode());
-        result = prime * result + ((getRecord_date() == null) ? 0 : getRecord_date().hashCode());
-        result = prime * result + ((getNext_date() == null) ? 0 : getNext_date().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
+        result = prime * result + ((getRecordDate() == null) ? 0 : getRecordDate().hashCode());
+        result = prime * result + ((getNextDate() == null) ? 0 : getNextDate().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         return result;
     }
 
@@ -106,13 +106,13 @@ public class HealthRecord {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", pet_id=").append(pet_id);
-        sb.append(", record_type=").append(record_type);
+        sb.append(", petId=").append(petId);
+        sb.append(", recordType=").append(recordType);
         sb.append(", title=").append(title);
         sb.append(", content=").append(content);
-        sb.append(", record_date=").append(record_date);
-        sb.append(", next_date=").append(next_date);
-        sb.append(", create_time=").append(create_time);
+        sb.append(", recordDate=").append(recordDate);
+        sb.append(", nextDate=").append(nextDate);
+        sb.append(", createTime=").append(createTime);
         sb.append("]");
         return sb.toString();
     }

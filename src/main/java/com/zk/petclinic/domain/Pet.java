@@ -25,7 +25,7 @@ public class Pet {
      * 主人ID
      */
     @TableField(value = "owner_id")
-    private Long owner_id;
+    private Long ownerId;
 
     /**
      * 宠物昵称
@@ -49,7 +49,7 @@ public class Pet {
      * 生日
      */
     @TableField(value = "birth_date")
-    private Date birth_date;
+    private Date birthDate;
 
     /**
      * 体重(kg)
@@ -73,7 +73,7 @@ public class Pet {
      * 过往病史
      */
     @TableField(value = "medical_history")
-    private String medical_history;
+    private String medicalHistory;
 
     /**
      * 过敏史
@@ -85,13 +85,13 @@ public class Pet {
      * 
      */
     @TableField(value = "create_time")
-    private Date create_time;
+    private Date createTime;
 
     /**
      * 
      */
     @TableField(value = "update_time")
-    private Date update_time;
+    private Date updateTime;
 
     @Override
     public boolean equals(Object that) {
@@ -106,18 +106,18 @@ public class Pet {
         }
         Pet other = (Pet) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getOwner_id() == null ? other.getOwner_id() == null : this.getOwner_id().equals(other.getOwner_id()))
+            && (this.getOwnerId() == null ? other.getOwnerId() == null : this.getOwnerId().equals(other.getOwnerId()))
             && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
             && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
             && (this.getBreed() == null ? other.getBreed() == null : this.getBreed().equals(other.getBreed()))
-            && (this.getBirth_date() == null ? other.getBirth_date() == null : this.getBirth_date().equals(other.getBirth_date()))
+            && (this.getBirthDate() == null ? other.getBirthDate() == null : this.getBirthDate().equals(other.getBirthDate()))
             && (this.getWeight() == null ? other.getWeight() == null : this.getWeight().equals(other.getWeight()))
             && (this.getGender() == null ? other.getGender() == null : this.getGender().equals(other.getGender()))
             && (this.getAvatar() == null ? other.getAvatar() == null : this.getAvatar().equals(other.getAvatar()))
-            && (this.getMedical_history() == null ? other.getMedical_history() == null : this.getMedical_history().equals(other.getMedical_history()))
+            && (this.getMedicalHistory() == null ? other.getMedicalHistory() == null : this.getMedicalHistory().equals(other.getMedicalHistory()))
             && (this.getAllergy() == null ? other.getAllergy() == null : this.getAllergy().equals(other.getAllergy()))
-            && (this.getCreate_time() == null ? other.getCreate_time() == null : this.getCreate_time().equals(other.getCreate_time()))
-            && (this.getUpdate_time() == null ? other.getUpdate_time() == null : this.getUpdate_time().equals(other.getUpdate_time()));
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()));
     }
 
     @Override
@@ -125,18 +125,18 @@ public class Pet {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getOwner_id() == null) ? 0 : getOwner_id().hashCode());
+        result = prime * result + ((getOwnerId() == null) ? 0 : getOwnerId().hashCode());
         result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
         result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
         result = prime * result + ((getBreed() == null) ? 0 : getBreed().hashCode());
-        result = prime * result + ((getBirth_date() == null) ? 0 : getBirth_date().hashCode());
+        result = prime * result + ((getBirthDate() == null) ? 0 : getBirthDate().hashCode());
         result = prime * result + ((getWeight() == null) ? 0 : getWeight().hashCode());
         result = prime * result + ((getGender() == null) ? 0 : getGender().hashCode());
         result = prime * result + ((getAvatar() == null) ? 0 : getAvatar().hashCode());
-        result = prime * result + ((getMedical_history() == null) ? 0 : getMedical_history().hashCode());
+        result = prime * result + ((getMedicalHistory() == null) ? 0 : getMedicalHistory().hashCode());
         result = prime * result + ((getAllergy() == null) ? 0 : getAllergy().hashCode());
-        result = prime * result + ((getCreate_time() == null) ? 0 : getCreate_time().hashCode());
-        result = prime * result + ((getUpdate_time() == null) ? 0 : getUpdate_time().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
         return result;
     }
 
@@ -147,18 +147,18 @@ public class Pet {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", owner_id=").append(owner_id);
+        sb.append(", ownerId=").append(ownerId);
         sb.append(", name=").append(name);
         sb.append(", type=").append(type);
         sb.append(", breed=").append(breed);
-        sb.append(", birth_date=").append(birth_date);
+        sb.append(", birthDate=").append(birthDate);
         sb.append(", weight=").append(weight);
         sb.append(", gender=").append(gender);
         sb.append(", avatar=").append(avatar);
-        sb.append(", medical_history=").append(medical_history);
+        sb.append(", medicalHistory=").append(medicalHistory);
         sb.append(", allergy=").append(allergy);
-        sb.append(", create_time=").append(create_time);
-        sb.append(", update_time=").append(update_time);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", updateTime=").append(updateTime);
         sb.append("]");
         return sb.toString();
     }
