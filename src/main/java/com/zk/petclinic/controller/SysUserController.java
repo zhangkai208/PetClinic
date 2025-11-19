@@ -63,12 +63,19 @@ public class SysUserController {
      */
     @GetMapping("/{id}")
     public ResultUtil<SysUser> getById(@PathVariable Long id) {
-        SysUser user = sysUserService.getById(id);
-        if (user == null) {
-            return ResultUtil.fail("用户不存在");
+        if (id == null || id <= 0) {
+            return ResultUtil.fail("用户ID无效");
         }
-        user.setPassword(null);
-        return ResultUtil.success(user);
+        try {
+            SysUser user = sysUserService.getById(id);
+            if (user == null) {
+                return ResultUtil.fail("用户不存在");
+            }
+            user.setPassword(null);
+            return ResultUtil.success(user);
+        } catch (Exception e) {
+            return ResultUtil.fail("查询用户失败: " + e.getMessage());
+        }
     }
 
     /**

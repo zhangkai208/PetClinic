@@ -40,7 +40,20 @@ public class JWTUtil {
         try {
             JWTSigner signer = JWTSignerUtil.hs256(KEY.getBytes());
             JWT jwt = JWT.of(token).setSigner(signer);
-            return jwt.verify(); // 验证签名
+            // 验证签名和过期时间
+            if (!jwt.verify()) {
+                return false;
+            }
+            // 检查是否过期
+            Map<String, Object> payloads = jwt.getPayloads();
+            if (payloads != null && payloads.containsKey("exp")) {
+                Long exp = ((Number) payloads.get("exp")).longValue();
+                long currentTime = System.currentTimeMillis() / 1000;
+                if (exp < currentTime) {
+                    return false; // token已过期
+                }
+            }
+            return true;
         } catch (Exception e) {
             return false;
         }
@@ -98,7 +111,21 @@ public class JWTUtil {
             if (payloads == null) {
                 return null;
             }
-            return (Integer) payloads.get("roleType");
+            Object roleTypeObj = payloads.get("roleType");
+            if (roleTypeObj == null) {
+                // 尝试其他可能的字段名（兼容性处理）
+                roleTypeObj = payloads.get("roluType"); // 拼写错误的情况
+            }
+            if (roleTypeObj == null) {
+                return null;
+            }
+            // 处理不同的数字类型
+            if (roleTypeObj instanceof Integer) {
+                return (Integer) roleTypeObj;
+            } else if (roleTypeObj instanceof Number) {
+                return ((Number) roleTypeObj).intValue();
+            }
+            return null;
         } catch (Exception e) {
             return null;
         }

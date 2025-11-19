@@ -38,19 +38,23 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // 无状态会话（使用JWT，不需要Session）
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // 配置请求授权
+            // 配置请求授权（注意：规则按顺序匹配，先匹配到的规则会生效）
             .authorizeHttpRequests(auth -> auth
-                // 公开接口（不需要认证）
+                // 1. 公开接口（不需要认证）- 必须放在最前面
                 .requestMatchers(
                     "/sysUser/login",      // 登录接口
-                    "/sysUser/register",   // 注册接口（如果后续添加）
+                    "/sysUser/register",   // 注册接口
                     "/error"               // 错误页面
                 ).permitAll()
-                // 管理员接口（需要ADMIN角色）
+                // 2. 用户管理CRUD接口（需要ADMIN角色）
+                // 注意：/sysUser 匹配 POST /sysUser（创建），/sysUser/** 匹配其他所有 /sysUser 下的路径
+                // 但不会覆盖已设置为 permitAll 的接口（因为顺序在前）
+                .requestMatchers("/sysUser", "/sysUser/**").hasRole("ADMIN")
+                // 3. 管理员接口（需要ADMIN角色）
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // 服务商接口（需要PROVIDER或ADMIN角色）
+                // 4. 服务商接口（需要PROVIDER或ADMIN角色）
                 .requestMatchers("/provider/**").hasAnyRole("PROVIDER", "ADMIN")
-                // 其他接口需要认证（登录后即可访问）
+                // 5. 其他接口需要认证（登录后即可访问，不限制角色）
                 .anyRequest().authenticated()
             )
             // 添加JWT过滤器（在UsernamePasswordAuthenticationFilter之前）
