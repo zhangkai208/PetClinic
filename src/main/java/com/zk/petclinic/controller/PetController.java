@@ -25,7 +25,7 @@ public class PetController {
         return ResultUtil.success(page);
     }
     @PutMapping("/{id}")
-    public ResultUtil update(@RequestBody Pet pet,@PathVariable long id) {
+    public ResultUtil<String> update(@RequestBody Pet pet,@PathVariable long id) {
         boolean updated = petService.updateById(pet);
         return updated ? ResultUtil.success("更新成功") : ResultUtil.fail("更新失败");
     }
@@ -35,12 +35,12 @@ public class PetController {
         return saved ? ResultUtil.success("新增成功") : ResultUtil.fail("新增失败");
     }
     @DeleteMapping("/{id}")
-    public ResultUtil delete(@PathVariable long id) {
+    public ResultUtil<String> delete(@PathVariable long id) {
         boolean removed = petService.removeById(id);
         return removed ? ResultUtil.success("删除成功") : ResultUtil.fail("删除失败");
     }
     @DeleteMapping
-    public ResultUtil deleteBatch(@RequestBody List<Long> ids) {
+    public ResultUtil<String> deleteBatch(@RequestBody List<Long> ids) {
         for(Long id : ids) {
             Pet pet = petService.getById(id);
             if(pet == null){

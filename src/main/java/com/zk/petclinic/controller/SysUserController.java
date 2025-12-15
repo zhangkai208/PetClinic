@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.SysUser;
 import com.zk.petclinic.service.SysUserService;
 import com.zk.petclinic.util.JWTUtil;
+import com.zk.petclinic.util.RedisUtil;
 import com.zk.petclinic.util.ResultUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +23,8 @@ public class SysUserController {
     @Autowired
     private SysUserService sysUserService;
 
+    @Autowired
+    private RedisUtil redisUtil;
     /**
      * 新增用户（后台管理专用）
      */
@@ -136,10 +141,17 @@ public class SysUserController {
         if(!password.equals(user.getPassword())) {
             return ResultUtil.fail("密码错误");
         }
-        
         // 生成JWT token
         String token = JWTUtil.generateLoginToken(username, user.getId(), user.getRoleType());
-        
+
+        String tokenkey = "token:user:"+user.getId();
+        boolean tokenSaved = redisUtil.set(tokenkey,token,7 * 24 * 3600);
+        String userInfokey = "userInfo:"+user.getId();
+        boolean userSaved = redisUtil.set(userInfokey,user,7 * 24 * 3600);
+
+        if (!tokenSaved || !userSaved) {
+            return ResultUtil.fail("登录失败：系统缓存服务不可用，请联系管理员");
+        }
         // 返回token和用户基本信息（不包含密码）
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
@@ -150,5 +162,15 @@ public class SysUserController {
         result.put("avatar", user.getAvatar());
         
         return ResultUtil.success(result);
+    }
+    @PostMapping("/logout")
+    public ResultUtil<String> logout(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Long id = JWTUtil.getUserIdFromToken(token);
+        if (token != null){
+            redisUtil.delete("token:user:"+id);
+            redisUtil.delete("userInfo:"+id);
+        }
+        return ResultUtil.success("退出登录成功");
     }
 }
