@@ -65,13 +65,17 @@ public class SecurityConfig {
 
     /**
      * CORS跨域配置
+ * 该方法配置跨域资源共享(CORS)规则，允许前端应用访问后端API
+ * @return CorsConfigurationSource 跨域配置源对象
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+    // 创建CORS配置对象
         CorsConfiguration configuration = new CorsConfiguration();
         // 允许所有来源（生产环境应配置具体域名）
+    // 使用setAllowedOriginPatterns而不是setAllowedOrigins，以支持通配符
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        // 允许的HTTP方法
+        // 允许的HTTP方法，包括GET、POST、PUT、DELETE和OPTIONS
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 允许的请求头
         configuration.setAllowedHeaders(Arrays.asList("*"));

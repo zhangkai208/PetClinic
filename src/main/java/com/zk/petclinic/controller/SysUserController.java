@@ -23,7 +23,7 @@ public class SysUserController {
     /**
      * 新增用户（后台管理专用）
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResultUtil<String> create(@Validated @RequestBody SysUser sysUser) {
         SysUser existingUser = sysUserService.findByUserName(sysUser.getUsername());
         if (existingUser != null) {
