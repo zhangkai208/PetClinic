@@ -165,12 +165,21 @@ public class SysUserController {
     }
     @PostMapping("/logout")
     public ResultUtil<String> logout(HttpServletRequest request) {
-        String token = request.getHeader("token");
-        Long id = JWTUtil.getUserIdFromToken(token);
-        if (token != null){
-            redisUtil.delete("token:user:"+id);
-            redisUtil.delete("userInfo:"+id);
+        // 从 Authorization header 读取 Bearer Token
+        String bearerToken = request.getHeader("Authorization");
+        
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            // 去掉 "Bearer " 前缀
+            String token = bearerToken.substring(7);
+            Long id = JWTUtil.getUserIdFromToken(token);
+            
+            if (id != null) {
+                // 删除 Redis 中的 Token 和用户信息
+                redisUtil.delete("token:user:" + id);
+                redisUtil.delete("userInfo:" + id);
+            }
         }
+        
         return ResultUtil.success("退出登录成功");
     }
 }

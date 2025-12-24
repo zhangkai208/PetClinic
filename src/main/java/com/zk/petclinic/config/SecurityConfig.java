@@ -46,15 +46,23 @@ public class SecurityConfig {
                     "/sysUser/register",   // 注册接口
                     "/error"               // 错误页面
                 ).permitAll()
-                // 2. 用户管理CRUD接口（需要ADMIN角色）
-                // 注意：/sysUser 匹配 POST /sysUser（创建），/sysUser/** 匹配其他所有 /sysUser 下的路径
-                // 但不会覆盖已设置为 permitAll 的接口（因为顺序在前）
-                .requestMatchers("/sysUser", "/sysUser/**").hasRole("ADMIN")
-                // 3. 管理员接口（需要ADMIN角色）
+                // 2. 用户常用接口（已登录即可访问）
+                .requestMatchers(
+                    "/sysUser/logout",     // 退出登录
+                    "/sysUser/page",       // 分页查询用户
+                    "/sysUser/{id}"        // 根据ID查询用户
+                ).authenticated()
+                // 3. 用户管理接口（需要ADMIN角色）
+                .requestMatchers(
+                    "/sysUser/create",     // 创建用户
+                    "/sysUser/{id}",       // 更新/删除用户（PUT/DELETE）
+                    "/sysUser"             // 批量删除
+                ).hasRole("ADMIN")
+                // 4. 管理员接口（需要ADMIN角色）
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // 4. 服务商接口（需要PROVIDER或ADMIN角色）
+                // 5. 服务商接口（需要PROVIDER或ADMIN角色）
                 .requestMatchers("/provider/**").hasAnyRole("PROVIDER", "ADMIN")
-                // 5. 其他接口需要认证（登录后即可访问，不限制角色）
+                // 6. 其他接口需要认证（登录后即可访问，不限制角色）
                 .anyRequest().authenticated()
             )
             // 添加JWT过滤器（在UsernamePasswordAuthenticationFilter之前）
