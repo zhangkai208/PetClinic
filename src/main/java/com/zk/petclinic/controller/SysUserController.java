@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.SysUser;
 import com.zk.petclinic.service.SysUserService;
 import com.zk.petclinic.util.JWTUtil;
+import com.zk.petclinic.util.QiniuOssUtil;
 import com.zk.petclinic.util.RedisUtil;
 import com.zk.petclinic.util.ResultUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,11 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 
 @RequestMapping("/sysUser")
 @RestController
@@ -181,5 +181,18 @@ public class SysUserController {
         }
         
         return ResultUtil.success("退出登录成功");
+    }
+
+    @PostMapping("/upload")
+    public ResultUtil<String> upload(final MultipartFile file) throws IOException {
+        //获取文件名
+        final String originalFilename = file.getOriginalFilename();
+        //判断不能为空
+        assert originalFilename != null;
+        //获取文件名，例如1.jpg，获取1
+        final String fileName = UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
+        //上传到七牛云
+        final String url = QiniuOssUtil.uploadFile(fileName, file.getInputStream());
+        return ResultUtil.success(url);
     }
 }
