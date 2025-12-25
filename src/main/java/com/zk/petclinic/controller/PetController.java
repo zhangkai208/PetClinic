@@ -4,16 +4,13 @@ package com.zk.petclinic.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.Pet;
 import com.zk.petclinic.service.PetService;
-import com.zk.petclinic.util.RedisUtil;
 import com.zk.petclinic.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RequestMapping("/pet")
-@Controller
+@RestController
 public class PetController {
     @Autowired
     private PetService petService;
@@ -30,7 +27,7 @@ public class PetController {
         return updated ? ResultUtil.success("更新成功") : ResultUtil.fail("更新失败");
     }
     @PostMapping("/create")
-    public ResultUtil<Pet> create(@RequestBody Pet pet) {
+    public ResultUtil<String> create(@RequestBody Pet pet) {
         boolean saved = petService.save(pet);
         return saved ? ResultUtil.success("新增成功") : ResultUtil.fail("新增失败");
     }

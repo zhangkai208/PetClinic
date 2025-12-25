@@ -6,6 +6,10 @@ server:
 spring:
   application:
     name: pet-health-system
+  security:
+    user:
+      name: zk
+      password: 123456
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
