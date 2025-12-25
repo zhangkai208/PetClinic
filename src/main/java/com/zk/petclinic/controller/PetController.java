@@ -5,8 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.Pet;
 import com.zk.petclinic.service.PetService;
 import com.zk.petclinic.util.ResultUtil;
+import com.zk.petclinic.util.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 import java.util.List;
 
 @RequestMapping("/pet")
@@ -23,11 +26,20 @@ public class PetController {
     }
     @PutMapping("/{id}")
     public ResultUtil<String> update(@RequestBody Pet pet,@PathVariable long id) {
+        pet.setId(id);
+        pet.setUpdateTime(new Date());
         boolean updated = petService.updateById(pet);
         return updated ? ResultUtil.success("更新成功") : ResultUtil.fail("更新失败");
     }
     @PostMapping("/create")
     public ResultUtil<String> create(@RequestBody Pet pet) {
+        // 从ThreadLocal获取当前登录用户ID，自动设置为宠物主人
+        String userIdStr = ThreadLocalUtil.get();
+        if (userIdStr != null) {
+            pet.setOwnerId(Long.valueOf(userIdStr));
+        }
+        pet.setCreateTime(new Date());
+        pet.setUpdateTime(new Date());
         boolean saved = petService.save(pet);
         return saved ? ResultUtil.success("新增成功") : ResultUtil.fail("新增失败");
     }

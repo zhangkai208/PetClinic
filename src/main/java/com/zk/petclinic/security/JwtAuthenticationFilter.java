@@ -3,6 +3,7 @@ package com.zk.petclinic.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zk.petclinic.util.JWTUtil;
 import com.zk.petclinic.util.ResultUtil;
+import com.zk.petclinic.util.ThreadLocalUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -88,10 +89,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 设置到Security上下文
             SecurityContextHolder.getContext().setAuthentication(authentication);
             
-            // 认证成功，继续执行过滤器链
-            filterChain.doFilter(request, response);
-        } catch (Exception e) {
+            // 将用户ID存入ThreadLocal，方便业务层获取当前登录用户
+            Long userId = JWTUtil.getUserIdFromToken(token);
+            if (userId != null) {
+                ThreadLocalUtil.set(String.valueOf(userId));
+            }
             
+            try {
+                // 认证成功，继续执行过滤器链
+                filterChain.doFilter(request, response);
+            } finally {
+                // 请求结束后清理ThreadLocal，防止线程池复用导致数据混乱
+                ThreadLocalUtil.remove();
+            }
+        } catch (Exception e) {
+            // 发生异常时也要清理ThreadLocal
+            ThreadLocalUtil.remove();
             writeErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "认证过程发生异常");
         }
     }
