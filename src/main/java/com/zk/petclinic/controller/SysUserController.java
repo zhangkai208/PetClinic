@@ -192,6 +192,11 @@ public class SysUserController {
         final String fileName = UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
         //上传到七牛云
         final String url = QiniuOssUtil.uploadFile(fileName, file.getInputStream());
-        return ResultUtil.success(url);
+        // 注意：不能直接使用 ResultUtil.success(url)，因为会匹配到 success(String message) 方法
+        ResultUtil<String> result = new ResultUtil<>();
+        result.setCode(200);
+        result.setMessage("上传成功");
+        result.setData(url);
+        return result;
     }
 }
