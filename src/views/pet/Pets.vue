@@ -110,6 +110,21 @@
         label-width="80px"
         label-position="left"
       >
+        <el-form-item label="头像">
+          <div class="avatar-upload">
+            <el-avatar :size="80" :src="petAvatarDisplay()">
+              {{ getPetEmoji(form.type) }}
+            </el-avatar>
+            <el-upload
+              :show-file-list="false"
+              :before-upload="handlePetAvatarUpload"
+              accept="image/*"
+            >
+              <el-button type="primary" text size="small">更换头像</el-button>
+            </el-upload>
+          </div>
+        </el-form-item>
+        
         <el-form-item label="名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入宠物名称" />
         </el-form-item>
@@ -189,7 +204,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Edit, Delete, Calendar } from '@element-plus/icons-vue'
-import { page as getPets, create, update, deletePet } from '@/api/pet'
+import { page as getPets, create, update, deletePet, upload } from '@/api/pet'
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -204,6 +219,8 @@ const filterType = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref()
+const avatarFile = ref(null)  // 待上传的头像文件
+const avatarPreview = ref('')  // 头像预览URL
 const form = reactive({
   id: null,
   name: '',
@@ -213,7 +230,8 @@ const form = reactive({
   birthDate: null,
   weight: null,
   allergy: '',
-  medicalHistory: ''
+  medicalHistory: '',
+  avatar: ''
 })
 
 const formRules = {
@@ -270,8 +288,28 @@ const loadPets = async () => {
   }
 }
 
+// 宠物头像显示
+const petAvatarDisplay = () => {
+  return avatarPreview.value || form.avatar || ''
+}
+
+// 选择宠物头像（只做本地预览，不上传）
+const handlePetAvatarUpload = (file) => {
+  if (file.size > 2 * 1024 * 1024) {
+    ElMessage.warning('头像大小不能超过2MB')
+    return false
+  }
+  avatarFile.value = file
+  avatarPreview.value = URL.createObjectURL(file)
+  return false
+}
+
 // 打开弹窗
 const openDialog = (pet = null) => {
+  // 重置头像相关状态
+  avatarFile.value = null
+  avatarPreview.value = ''
+  
   if (pet) {
     isEdit.value = true
     Object.assign(form, {
@@ -283,7 +321,8 @@ const openDialog = (pet = null) => {
       birthDate: pet.birthDate,
       weight: pet.weight,
       allergy: pet.allergy,
-      medicalHistory: pet.medicalHistory
+      medicalHistory: pet.medicalHistory,
+      avatar: pet.avatar
     })
   } else {
     isEdit.value = false
@@ -296,7 +335,8 @@ const openDialog = (pet = null) => {
       birthDate: null,
       weight: null,
       allergy: '',
-      medicalHistory: ''
+      medicalHistory: '',
+      avatar: ''
     })
   }
   dialogVisible.value = true
@@ -309,17 +349,33 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
+    let avatarUrl = form.avatar
+    
+    // 如果有新选择的头像文件，先上传
+    if (avatarFile.value) {
+      const uploadRes = await upload(avatarFile.value)
+      if (uploadRes.code === 200 && uploadRes.data) {
+        avatarUrl = uploadRes.data
+      } else {
+        ElMessage.error('头像上传失败')
+        return
+      }
+    }
+    
+    const submitData = { ...form, avatar: avatarUrl }
+    
     if (isEdit.value) {
-      await update(form.id, form)
+      await update(form.id, submitData)
       ElMessage.success('更新成功')
     } else {
-      await create(form)
+      await create(submitData)
       ElMessage.success('添加成功')
     }
     dialogVisible.value = false
     loadPets()
   } catch (e) {
     console.error('操作失败:', e)
+    ElMessage.error('操作失败')
   } finally {
     submitting.value = false
   }
@@ -501,6 +557,18 @@ onMounted(() => {
 
   .pets-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+// 头像上传
+.avatar-upload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  
+  .el-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-size: 32px;
   }
 }
 </style>

@@ -24,3 +24,12 @@ export const deletePet = (id) => {
 export const deleteBatch = (ids) => {
     return request.delete('/pet', { data: ids })
 }
+
+// 上传宠物头像
+export const upload = (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request.post('/pet/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
+}
