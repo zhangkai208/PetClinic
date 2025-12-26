@@ -4,13 +4,17 @@ package com.zk.petclinic.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.Pet;
 import com.zk.petclinic.service.PetService;
+import com.zk.petclinic.util.QiniuOssUtil;
 import com.zk.petclinic.util.ResultUtil;
 import com.zk.petclinic.util.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @RequestMapping("/pet")
 @RestController
@@ -58,5 +62,22 @@ public class PetController {
         }
         boolean removed = petService.removeBatchByIds(ids);
         return removed ? ResultUtil.success("批量删除成功") : ResultUtil.fail("批量删除失败");
+    }
+    @PostMapping("/upload")
+    public ResultUtil<String> upload(final MultipartFile file) throws IOException {
+        //获取文件名
+        final String originalFilename = file.getOriginalFilename();
+        //判断不能为空
+        assert originalFilename != null;
+        //获取文件名，例如1.jpg，获取1
+        final String fileName = UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
+        //上传到七牛云
+        final String url = QiniuOssUtil.uploadFile(fileName, file.getInputStream());
+        // 注意：不能直接使用 ResultUtil.success(url)，因为会匹配到 success(String message) 方法
+        ResultUtil<String> result = new ResultUtil<>();
+        result.setCode(200);
+        result.setMessage("上传成功");
+        result.setData(url);
+        return result;
     }
 }
