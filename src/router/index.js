@@ -11,19 +11,19 @@ const routes = [
   {
     path: '/',
     component: () => import('@/views/layout/Layout.vue'),
-    redirect: '/dashboard',
+    redirect: '/pets',
     children: [
-      {
-        path: 'dashboard',
-        name: 'dashboard',
-        component: () => import('@/views/Dashboard.vue'),
-        meta: { title: '仪表盘' }
-      },
       {
         path: 'pets',
         name: 'pets',
         component: () => import('@/views/pet/Pets.vue'),
         meta: { title: '我的宠物' }
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('@/views/Profile.vue'),
+        meta: { title: '个人中心' }
       }
     ]
   },
