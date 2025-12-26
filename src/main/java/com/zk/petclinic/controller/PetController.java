@@ -1,6 +1,7 @@
 package com.zk.petclinic.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.Pet;
 import com.zk.petclinic.service.PetService;
@@ -25,7 +26,18 @@ public class PetController {
     @GetMapping("/page")
     public ResultUtil<Page<Pet>> page(@RequestParam(defaultValue = "1") long pageNo,
                                       @RequestParam(defaultValue = "10") long pageSize) {
-        Page<Pet> page = petService.page(new Page<>(pageNo, pageSize));
+        // 获取当前登录用户ID
+        String userIdStr = ThreadLocalUtil.get();
+        if (userIdStr == null || userIdStr.isEmpty()) {
+            return ResultUtil.fail("请先登录");
+        }
+        Long userId = Long.valueOf(userIdStr);
+        
+        // 只查询当前用户的宠物
+        LambdaQueryWrapper<Pet> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Pet::getOwnerId, userId);
+        
+        Page<Pet> page = petService.page(new Page<>(pageNo, pageSize), queryWrapper);
         return ResultUtil.success(page);
     }
     @PutMapping("/{id}")
