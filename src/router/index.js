@@ -1,26 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useTokenStore } from '@/stores/token'
 
 const routes = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('../views/Login.vue'),
+    component: () => import('@/views/Login.vue'),
     meta: { public: true, title: '登录' }
   },
   {
     path: '/',
-    component: () => import('../views/layout/Layout.vue'),
+    component: () => import('@/views/layout/Layout.vue'),
+    redirect: '/dashboard',
     children: [
       {
-        path: '',
+        path: 'dashboard',
         name: 'dashboard',
-        component: () => import('../views/Dashboard.vue'),
+        component: () => import('@/views/Dashboard.vue'),
         meta: { title: '仪表盘' }
       },
       {
         path: 'pets',
         name: 'pets',
-        component: () => import('../views/pet/Pets.vue'),
+        component: () => import('@/views/pet/Pets.vue'),
         meta: { title: '我的宠物' }
       }
     ]
@@ -34,8 +36,12 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('TOKEN')
-  if (!to.meta.public && !token) {
+  // 设置页面标题
+  document.title = to.meta.title ? `${to.meta.title} - PetClinic` : 'PetClinic'
+
+  // 使用 Pinia store 获取 token
+  const tokenStore = useTokenStore()
+  if (!to.meta.public && !tokenStore.token) {
     next('/login')
   } else {
     next()
@@ -43,5 +49,3 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
-
-

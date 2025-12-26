@@ -1,16 +1,17 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '../stores/user'
+import { useTokenStore } from '@/stores/token'
+import router from '@/router'
 
 const request = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: '/api',
   timeout: 10000
 })
 
 request.interceptors.request.use((config) => {
-  const userStore = useUserStore()
-  if (userStore.token) {
-    config.headers.Authorization = `Bearer ${userStore.token}`
+  const tokenStore = useTokenStore()
+  if (tokenStore.token) {
+    config.headers.Authorization = `Bearer ${tokenStore.token}`
   }
   return config
 })
@@ -25,11 +26,17 @@ request.interceptors.response.use(
     return data ?? res
   },
   (err) => {
-    ElMessage.error(err?.response?.data?.message || err.message || '网络错误')
+    // 处理401未授权错误
+    if (err.response?.status === 401) {
+      const tokenStore = useTokenStore()
+      tokenStore.removeToken()
+      router.push('/login')
+      ElMessage.error('登录已过期，请重新登录')
+    } else {
+      ElMessage.error(err?.response?.data?.message || err.message || '网络错误')
+    }
     return Promise.reject(err)
   }
 )
 
 export default request
-
-
