@@ -8,7 +8,7 @@
     <div class="profile-content">
       <!-- 头像区域 -->
       <div class="avatar-section">
-        <el-avatar :size="100" :src="form.avatar || defaultAvatar">
+        <el-avatar :size="100" :src="displayAvatar()">
           {{ form.nickname?.charAt(0) || form.username?.charAt(0) || 'U' }}
         </el-avatar>
         <el-upload
@@ -66,6 +66,8 @@ const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726
 
 const formRef = ref()
 const submitting = ref(false)
+const avatarFile = ref(null)  // 待上传的头像文件
+const avatarPreview = ref('')  // 头像预览URL
 const form = reactive({
   id: null,
   username: '',
@@ -79,6 +81,11 @@ const formRules = {
   nickname: [{ max: 20, message: '昵称最多20个字符', trigger: 'blur' }],
   phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }],
   email: [{ type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }]
+}
+
+// 计算显示的头像
+const displayAvatar = () => {
+  return avatarPreview.value || form.avatar || defaultAvatar
 }
 
 // 加载用户信息
@@ -103,29 +110,17 @@ const loadUserInfo = async () => {
   }
 }
 
-// 上传头像
-const handleAvatarUpload = async (file) => {
+// 选择头像（只做本地预览，不上传）
+const handleAvatarUpload = (file) => {
   if (file.size > 2 * 1024 * 1024) {
     ElMessage.warning('头像大小不能超过2MB')
     return false
   }
-  try {
-    const res = await upload(file)
-    if (res.code === 200 && res.data) {
-      form.avatar = res.data
-      // 上传成功后自动保存到数据库
-      await update(form.id, { avatar: form.avatar })
-      // 更新本地存储
-      userInfoStore.setUserInfo({
-        ...userInfoStore.userInfo,
-        avatar: form.avatar
-      })
-      ElMessage.success('头像更新成功')
-    }
-  } catch (e) {
-    ElMessage.error('头像上传失败')
-  }
-  return false
+  // 保存文件引用，用于后续上传
+  avatarFile.value = file
+  // 创建本地预览URL
+  avatarPreview.value = URL.createObjectURL(file)
+  return false  // 阻止el-upload自动上传
 }
 
 // 提交表单
@@ -135,21 +130,43 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
+    let avatarUrl = form.avatar
+    
+    // 如果有新选择的头像文件，先上传
+    if (avatarFile.value) {
+      const uploadRes = await upload(avatarFile.value)
+      console.log('上传响应:', uploadRes)  // 调试日志
+      if (uploadRes.code === 200 && uploadRes.data) {
+        avatarUrl = uploadRes.data
+      } else {
+        ElMessage.error('头像上传失败')
+        return
+      }
+    }
+    
+    // 更新用户信息到数据库
     await update(form.id, {
       nickname: form.nickname,
       phone: form.phone,
       email: form.email,
-      avatar: form.avatar
+      avatar: avatarUrl
     })
+    
+    // 更新本地数据
+    form.avatar = avatarUrl
+    avatarFile.value = null
+    avatarPreview.value = ''
+    
     // 更新本地存储
     userInfoStore.setUserInfo({
       ...userInfoStore.userInfo,
       nickname: form.nickname,
-      avatar: form.avatar
+      avatar: avatarUrl
     })
     ElMessage.success('保存成功')
   } catch (e) {
     console.error('保存失败:', e)
+    ElMessage.error('保存失败')
   } finally {
     submitting.value = false
   }
