@@ -93,10 +93,15 @@ public class JWTUtil {
             if (userId == null) {
                 return null;
             }
-            if (userId instanceof Integer) {
-                return ((Integer) userId).longValue();
+            // 统一使用 Number 处理所有数字类型
+            if (userId instanceof Number) {
+                return ((Number) userId).longValue();
             }
-            return (Long) userId;
+            // 备选：尝试字符串转换
+            if (userId instanceof String) {
+                return Long.parseLong((String) userId);
+            }
+            return null;
         } catch (Exception e) {
             return null;
         }
