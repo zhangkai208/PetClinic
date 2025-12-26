@@ -26,6 +26,11 @@
           <el-icon><User /></el-icon>
           <template #title>个人中心</template>
         </el-menu-item>
+        <!-- 管理员菜单 -->
+        <el-menu-item v-if="isAdmin" index="/admin/users">
+          <el-icon><Setting /></el-icon>
+          <template #title>用户管理</template>
+        </el-menu-item>
       </el-menu>
 
       <div class="sidebar-footer">
@@ -88,7 +93,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  PriceTag, User, ArrowDown, SwitchButton, Expand, Fold 
+  PriceTag, User, ArrowDown, SwitchButton, Expand, Fold, Setting 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'
@@ -103,6 +108,7 @@ const isCollapsed = ref(false)
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
 const userInfo = computed(() => userInfoStore.userInfo || {})
+const isAdmin = computed(() => userInfo.value.roleType === 3)
 const activeMenu = computed(() => route.path)
 const currentTitle = computed(() => route.meta?.title || '首页')
 
