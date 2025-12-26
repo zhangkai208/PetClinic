@@ -140,6 +140,10 @@ public class SysUserController {
         if(!password.equals(user.getPassword())) {
             return ResultUtil.fail("密码错误");
         }
+        // 检查账号状态
+        if (user.getStatus() == null || user.getStatus() == 0) {
+            return ResultUtil.fail("账号已被禁用，请联系管理员");
+        }
         // 生成JWT token
         String token = JWTUtil.generateLoginToken(username, user.getId(), user.getRoleType());
 
