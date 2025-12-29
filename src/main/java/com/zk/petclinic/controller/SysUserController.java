@@ -2,10 +2,9 @@ package com.zk.petclinic.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.SysUser;
+import com.zk.petclinic.domain.dto.LoginResult;
 import com.zk.petclinic.service.SysUserService;
 import com.zk.petclinic.util.JWTUtil;
-import com.zk.petclinic.util.QiniuOssUtil;
-import com.zk.petclinic.util.RedisUtil;
 import com.zk.petclinic.util.ResultUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 @RequestMapping("/sysUser")
 @RestController
@@ -22,8 +21,6 @@ public class SysUserController {
     @Autowired
     private SysUserService sysUserService;
 
-    @Autowired
-    private RedisUtil redisUtil;
     /**
      * 新增用户（后台管理专用）
      */
@@ -33,13 +30,7 @@ public class SysUserController {
         if (existingUser != null) {
             return ResultUtil.fail("用户名已存在");
         }
-        sysUser.setId(null);
-        sysUser.setCreateTime(new Date());
-        sysUser.setUpdateTime(new Date());
-        if (sysUser.getStatus() == null) {
-            sysUser.setStatus(1);
-        }
-        boolean saved = sysUserService.save(sysUser);
+        boolean saved = sysUserService.createUser(sysUser);
         return saved ? ResultUtil.success("新增成功") : ResultUtil.fail("新增失败");
     }
 
@@ -49,17 +40,8 @@ public class SysUserController {
         if (existingUser != null) {
             return ResultUtil.fail("用户名已存在");
         }
-        sysUser.setId(null);
-        sysUser.setCreateTime(new Date());
-        sysUser.setUpdateTime(new Date());
-        if (sysUser.getStatus() == null) {
-            sysUser.setStatus(1);
-        }
-        boolean saved = sysUserService.save(sysUser);
-        if (!saved) {
-            return ResultUtil.fail("注册失败，请稍后再试");
-        }
-        return ResultUtil.success("注册成功");
+        boolean saved = sysUserService.registerUser(sysUser);
+        return saved ? ResultUtil.success("注册成功") : ResultUtil.fail("注册失败，请稍后再试");
     }
 
     /**
@@ -71,11 +53,10 @@ public class SysUserController {
             return ResultUtil.fail("用户ID无效");
         }
         try {
-            SysUser user = sysUserService.getById(id);
+            SysUser user = sysUserService.getUserById(id);
             if (user == null) {
                 return ResultUtil.fail("用户不存在");
             }
-            user.setPassword(null);
             return ResultUtil.success(user);
         } catch (Exception e) {
             return ResultUtil.fail("查询用户失败: " + e.getMessage());
@@ -88,8 +69,7 @@ public class SysUserController {
     @GetMapping("/page")
     public ResultUtil<Page<SysUser>> page(@RequestParam(defaultValue = "1") long pageNo,
                                           @RequestParam(defaultValue = "10") long pageSize) {
-        Page<SysUser> page = sysUserService.page(new Page<>(pageNo, pageSize));
-        page.getRecords().forEach(u -> u.setPassword(null));
+        Page<SysUser> page = sysUserService.pageUsers(pageNo, pageSize);
         return ResultUtil.success(page);
     }
 
@@ -102,9 +82,7 @@ public class SysUserController {
         if (existingUser == null) {
             return ResultUtil.fail("用户不存在");
         }
-        sysUser.setId(id);
-        sysUser.setUpdateTime(new Date());
-        boolean updated = sysUserService.updateById(sysUser);
+        boolean updated = sysUserService.updateUser(id, sysUser);
         return updated ? ResultUtil.success("更新成功") : ResultUtil.fail("更新失败");
     }
 
@@ -130,73 +108,28 @@ public class SysUserController {
     }
 
     @PostMapping("/login")
-    public ResultUtil<Map<String, Object>> login(@Validated @RequestBody SysUser sysUser) {
-        String username = sysUser.getUsername();
-        String password = sysUser.getPassword();
-        SysUser user = sysUserService.findByUserName(username);
-        if(user == null) {
-            return ResultUtil.fail("用户名不存在");
+    public ResultUtil<LoginResult> login(@Validated @RequestBody SysUser sysUser) {
+        LoginResult result = sysUserService.login(sysUser.getUsername(), sysUser.getPassword());
+        if (!result.isSuccess()) {
+            return ResultUtil.fail(result.getMessage());
         }
-        if(!password.equals(user.getPassword())) {
-            return ResultUtil.fail("密码错误");
-        }
-        // 检查账号状态
-        if (user.getStatus() == null || user.getStatus() == 0) {
-            return ResultUtil.fail("账号已被禁用，请联系管理员");
-        }
-        // 生成JWT token
-        String token = JWTUtil.generateLoginToken(username, user.getId(), user.getRoleType());
-
-        String tokenkey = "token:user:"+user.getId();
-        boolean tokenSaved = redisUtil.set(tokenkey,token,7 * 24 * 3600);
-        String userInfokey = "userInfo:"+user.getId();
-        boolean userSaved = redisUtil.set(userInfokey,user,7 * 24 * 3600);
-
-        if (!tokenSaved || !userSaved) {
-            return ResultUtil.fail("登录失败：系统缓存服务不可用，请联系管理员");
-        }
-        // 返回token和用户基本信息（不包含密码）
-        Map<String, Object> result = new HashMap<>();
-        result.put("token", token);
-        result.put("userId", user.getId());
-        result.put("username", user.getUsername());
-        result.put("nickname", user.getNickname());
-        result.put("roleType", user.getRoleType());
-        result.put("avatar", user.getAvatar());
-        
         return ResultUtil.success(result);
     }
+
     @PostMapping("/logout")
     public ResultUtil<String> logout(HttpServletRequest request) {
-        // 从 Authorization header 读取 Bearer Token
         String bearerToken = request.getHeader("Authorization");
-        
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            // 去掉 "Bearer " 前缀
             String token = bearerToken.substring(7);
             Long id = JWTUtil.getUserIdFromToken(token);
-            
-            if (id != null) {
-                // 删除 Redis 中的 Token 和用户信息
-                redisUtil.delete("token:user:" + id);
-                redisUtil.delete("userInfo:" + id);
-            }
+            sysUserService.logout(id);
         }
-        
         return ResultUtil.success("退出登录成功");
     }
 
     @PostMapping("/upload")
     public ResultUtil<String> upload(final MultipartFile file) throws IOException {
-        //获取文件名
-        final String originalFilename = file.getOriginalFilename();
-        //判断不能为空
-        assert originalFilename != null;
-        //获取文件名，例如1.jpg，获取1
-        final String fileName = UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
-        //上传到七牛云
-        final String url = QiniuOssUtil.uploadFile(fileName, file.getInputStream());
-        // 注意：不能直接使用 ResultUtil.success(url)，因为会匹配到 success(String message) 方法
+        String url = sysUserService.uploadAvatar(file);
         ResultUtil<String> result = new ResultUtil<>();
         result.setCode(200);
         result.setMessage("上传成功");
