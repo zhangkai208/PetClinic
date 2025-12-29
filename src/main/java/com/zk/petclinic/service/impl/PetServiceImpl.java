@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -73,4 +74,22 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
                     .eq(Pet::getGender, gender);  // 直接使用枚举，MyBatis-Plus自动转换
         return this.list(queryWrapper);
     }
+
+    @Override
+    public List<String> uploadPhotos(MultipartFile[] files) throws IOException {
+        List<String> urls = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (file != null && !file.isEmpty()) {
+                String originalFilename = file.getOriginalFilename();
+                if (originalFilename != null) {
+                    String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+                    String fileName = UUID.randomUUID().toString() + ext;
+                    String url = QiniuOssUtil.uploadFile(fileName, file.getInputStream());
+                    urls.add(url);
+                }
+            }
+        }
+        return urls;
+    }
+
 }

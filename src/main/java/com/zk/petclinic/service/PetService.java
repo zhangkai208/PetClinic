@@ -45,4 +45,11 @@ public interface PetService extends IService<Pet> {
      * 根据性别查询当前用户的宠物
      */
     List<Pet> findByGender(Petgender gender, Long ownerId);
+
+    /**
+     * 上传相册（支持多张照片）
+     * @param files 多个图片文件
+     * @return 上传成功的图片URL列表
+     */
+    List<String> uploadPhotos(MultipartFile[] files) throws IOException;
 }

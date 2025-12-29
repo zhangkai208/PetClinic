@@ -71,6 +71,12 @@ public class Pet {
     private String avatar;
 
     /**
+     * 相册
+     */
+    @TableField(value = "photos")
+    private String photos;
+
+    /**
      * 过往病史
      */
     @TableField(value = "medical_history")

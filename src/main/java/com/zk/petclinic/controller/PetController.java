@@ -85,4 +85,18 @@ public class PetController {
         List<Pet> pets = petService.findByGender(gender, userId);
         return ResultUtil.success(pets);
     }
+
+    /**
+     * 上传相册（支持一次上传多张照片）
+     * @param files 多个图片文件
+     * @return 上传成功的图片URL列表
+     */
+    @PostMapping("/uploadPhotos")
+    public ResultUtil<List<String>> uploadPhotos(@RequestParam("files") MultipartFile[] files) throws IOException {
+        if (files == null || files.length == 0) {
+            return ResultUtil.fail("请选择要上传的图片");
+        }
+        List<String> urls = petService.uploadPhotos(files);
+        return ResultUtil.success(urls);
+    }
 }
