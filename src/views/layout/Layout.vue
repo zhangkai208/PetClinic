@@ -22,6 +22,10 @@
           <el-icon><HomeFilled /></el-icon>
           <template #title>我的宠物</template>
         </el-menu-item>
+        <el-menu-item index="/gallery">
+          <el-icon><Picture /></el-icon>
+          <template #title>宠物相册</template>
+        </el-menu-item>
         <el-menu-item index="/profile">
           <el-icon><User /></el-icon>
           <template #title>个人中心</template>
@@ -95,7 +99,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'

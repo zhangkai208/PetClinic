@@ -38,3 +38,12 @@ export const upload = (file) => {
 export const getByGender = (gender) => {
     return request.get(`/pet/gender/${gender}`)
 }
+
+// 上传宠物相册（支持多张）
+export const uploadPhotos = (files) => {
+    const formData = new FormData()
+    files.forEach(file => formData.append('files', file))
+    return request.post('/pet/uploadPhotos', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
+}

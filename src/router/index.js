@@ -20,6 +20,12 @@ const routes = [
         meta: { title: '我的宠物' }
       },
       {
+        path: 'gallery',
+        name: 'gallery',
+        component: () => import('@/views/pet/PetGallery.vue'),
+        meta: { title: '宠物相册' }
+      },
+      {
         path: 'profile',
         name: 'profile',
         component: () => import('@/views/Profile.vue'),

@@ -73,6 +73,16 @@
         </div>
 
         <div class="pet-actions">
+          <el-upload
+            :show-file-list="false"
+            :http-request="(options) => handleUploadPhotos(options, pet)"
+            accept="image/*"
+            multiple
+          >
+            <el-button text type="success" title="添加照片">
+              <el-icon><Camera /></el-icon>
+            </el-button>
+          </el-upload>
           <el-button text type="primary" @click="openDialog(pet)">
             <el-icon><Edit /></el-icon>
           </el-button>
@@ -209,8 +219,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Edit, Delete, Calendar } from '@element-plus/icons-vue'
-import { page as getPets, create, update, deletePet, upload, getByGender } from '@/api/pet'
+import { Plus, Search, Edit, Delete, Calendar, Camera } from '@element-plus/icons-vue'
+import { page as getPets, create, update, deletePet, upload, getByGender, uploadPhotos } from '@/api/pet'
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -438,6 +448,44 @@ const handleDelete = async (pet) => {
   }
 }
 
+// 上传宠物照片 - 使用http-request每个文件单独上传但累加到现有照片
+const handleUploadPhotos = async (options, pet) => {
+  const file = options.file
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.warning('图片大小不能超过5MB')
+    return
+  }
+  
+  try {
+    // 上传图片
+    const res = await uploadPhotos([file])
+    if (res.code === 200 && res.data && res.data.length > 0) {
+      // 重新获取最新的宠物数据
+      const currentPet = pets.value.find(p => p.id === pet.id)
+      let existingPhotos = []
+      if (currentPet?.photos) {
+        try {
+          existingPhotos = JSON.parse(currentPet.photos)
+        } catch (e) {
+          existingPhotos = []
+        }
+      }
+      // 添加新照片
+      existingPhotos.push(...res.data)
+      // 更新宠物信息
+      await update(pet.id, { photos: JSON.stringify(existingPhotos) })
+      // 同步更新本地数据
+      if (currentPet) {
+        currentPet.photos = JSON.stringify(existingPhotos)
+      }
+      ElMessage.success('照片添加成功')
+    }
+  } catch (e) {
+    console.error('上传失败:', e)
+    ElMessage.error('上传失败')
+  }
+}
+
 onMounted(() => {
   loadPets()
 })
@@ -564,12 +612,24 @@ onMounted(() => {
 
 .pet-actions {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 8px;
+  right: 8px;
   opacity: 0;
   transition: opacity 0.2s;
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 4px;
+
+  // 处理el-upload让它不破坏布局
+  :deep(.el-upload) {
+    display: flex !important;
+  }
+
+  .el-button {
+    margin: 0 !important;
+    padding: 4px !important;
+  }
 }
 
 .empty-state {
