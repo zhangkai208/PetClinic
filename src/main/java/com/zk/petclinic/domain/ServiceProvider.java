@@ -33,7 +33,7 @@ public class ServiceProvider {
     private String name;
 
     /**
-     * 类型：医院、美容店、寄养、训练
+     * 类型：0医院、1美容店、2寄养、3训练
      */
     @TableField(value = "type")
     private String type;
