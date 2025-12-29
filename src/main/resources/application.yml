@@ -17,6 +17,14 @@ spring:
     username: root
     password: 123456
 
+  ai:
+    openai:
+      base-url: https://ark.cn-beijing.volces.com/api/v3
+      api-key:
+      chat:
+        options:
+          model: deepseek-v3-250324
+
   data:
     redis:
       host: localhost
