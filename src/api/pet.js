@@ -33,3 +33,8 @@ export const upload = (file) => {
         headers: { 'Content-Type': 'multipart/form-data' }
     })
 }
+
+// 根据性别查询宠物 (MALE/FEMALE/UNKNOWN)
+export const getByGender = (gender) => {
+    return request.get(`/pet/gender/${gender}`)
+}

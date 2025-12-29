@@ -233,10 +233,11 @@ const filteredUsers = computed(() => {
       u.nickname?.toLowerCase().includes(kw)
     )
   }
-  if (filterRole.value !== '') {
+  // 使用更严格的判断，确保筛选值有效时才过滤
+  if (filterRole.value !== '' && filterRole.value !== null && filterRole.value !== undefined) {
     result = result.filter(u => u.roleType === filterRole.value)
   }
-  if (filterStatus.value !== '') {
+  if (filterStatus.value !== '' && filterStatus.value !== null && filterStatus.value !== undefined) {
     result = result.filter(u => u.status === filterStatus.value)
   }
   return result

@@ -14,12 +14,12 @@
         :collapse="isCollapsed"
         :collapse-transition="false"
         background-color="transparent"
-        text-color="#a3aed0"
+        text-color="rgba(255,255,255,0.65)"
         active-text-color="#fff"
         router
       >
         <el-menu-item index="/pets">
-          <el-icon><PriceTag /></el-icon>
+          <el-icon><HomeFilled /></el-icon>
           <template #title>我的宠物</template>
         </el-menu-item>
         <el-menu-item index="/profile">
@@ -28,22 +28,24 @@
         </el-menu-item>
         <!-- 管理员菜单 -->
         <el-menu-item v-if="isAdmin" index="/admin/users">
-          <el-icon><Setting /></el-icon>
+          <el-icon><UserFilled /></el-icon>
           <template #title>用户管理</template>
         </el-menu-item>
       </el-menu>
 
       <div class="sidebar-footer">
-        <el-button 
-          :icon="isCollapsed ? Expand : Fold" 
-          circle 
-          @click="toggleCollapse"
-        />
+        <el-tooltip :content="isCollapsed ? '展开菜单' : '收起菜单'" placement="right">
+          <div class="collapse-btn" @click="toggleCollapse">
+            <el-icon :size="18">
+              <component :is="isCollapsed ? Expand : Fold" />
+            </el-icon>
+          </div>
+        </el-tooltip>
       </div>
     </aside>
 
     <!-- 右侧主区域 -->
-    <div class="main-area">
+    <div class="main-area" :class="{ 'sidebar-collapsed': isCollapsed }">
       <!-- 顶部导航栏 -->
       <header class="header">
         <div class="header-left">
@@ -93,7 +95,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  PriceTag, User, ArrowDown, SwitchButton, Expand, Fold, Setting 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'
@@ -144,28 +146,33 @@ const handleCommand = async (command) => {
 .layout-container {
   display: flex;
   min-height: 100vh;
-  background: #f4f7fe;
+  background: #f0f2f5;
 }
 
-// 侧边栏
+// 侧边栏 - 深色主题
 .sidebar {
-  width: 260px;
+  width: 210px;
   background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
   position: fixed;
   left: 0;
   top: 0;
   bottom: 0;
   z-index: 100;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
 
   &.collapsed {
-    width: 80px;
+    width: 64px;
 
     .sidebar-header {
       padding: 20px 0;
       justify-content: center;
+    }
+
+    .logo-icon {
+      font-size: 28px;
     }
   }
 }
@@ -173,95 +180,134 @@ const handleCommand = async (command) => {
 .sidebar-header {
   display: flex;
   align-items: center;
-  padding: 24px 20px;
-  gap: 12px;
+  padding: 20px 16px;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 
   .logo-icon {
-    font-size: 32px;
+    font-size: 28px;
+    transition: font-size 0.3s;
   }
 
   .logo-text {
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 600;
     color: white;
     letter-spacing: 1px;
+    white-space: nowrap;
   }
 }
 
 .sidebar :deep(.el-menu) {
   border: none;
-  padding: 16px 12px;
+  padding: 12px 8px;
   flex: 1;
+  background: transparent !important;
 
   .el-menu-item {
-    height: 48px;
-    line-height: 48px;
+    height: 44px;
+    line-height: 44px;
     margin-bottom: 4px;
-    border-radius: 10px;
-    font-size: 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1) !important;
     }
 
     &.is-active {
-      background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
-      color: white;
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: white !important;
+      font-weight: 500;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: #fff;
+        border-radius: 0 2px 2px 0;
+      }
     }
 
     .el-icon {
-      font-size: 20px;
-      margin-right: 12px;
+      font-size: 18px;
+      margin-right: 10px;
+    }
+  }
+
+  // 收起时的样式
+  &.el-menu--collapse {
+    padding: 12px 0;  // 移除左右padding
+    
+    .el-menu-item {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      justify-content: center;
+      
+      .el-icon {
+        margin-right: 0;
+      }
+
+      &.is-active::before {
+        display: none;
+      }
     }
   }
 }
 
 .sidebar-footer {
-  padding: 16px;
+  padding: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: center;
+}
 
-  .el-button {
+.collapse-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.65);
+  transition: all 0.2s;
+
+  &:hover {
     background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: #a3aed0;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
-    }
+    color: white;
   }
 }
 
 // 主区域
 .main-area {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 210px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.2, 0, 0, 1);
 
-  .collapsed + & {
-    margin-left: 80px;
+  &.sidebar-collapsed {
+    margin-left: 64px;
   }
-}
-
-.sidebar.collapsed + .main-area {
-  margin-left: 80px;
 }
 
 // 顶部导航栏
 .header {
-  height: 72px;
+  height: 56px;
   background: white;
-  padding: 0 32px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -270,16 +316,17 @@ const handleCommand = async (command) => {
 .header-left {
   :deep(.el-breadcrumb__item) {
     .el-breadcrumb__inner {
-      color: #6b7280;
+      color: #8c8c8c;
       font-weight: 400;
+      font-size: 14px;
 
       &.is-link:hover {
-        color: #1890ff;
+        color: #1d42ab;
       }
     }
 
     &:last-child .el-breadcrumb__inner {
-      color: #1f2937;
+      color: #262626;
       font-weight: 500;
     }
   }
@@ -288,32 +335,40 @@ const handleCommand = async (command) => {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
   transition: background 0.2s;
 
   &:hover {
-    background: #f3f4f6;
+    background: #f5f5f5;
+  }
+
+  .el-avatar {
+    background: linear-gradient(135deg, #1d42ab 0%, #2b5fd9 100%);
   }
 
   .user-name {
     font-size: 14px;
-    color: #374151;
+    color: #262626;
     font-weight: 500;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .el-icon {
     font-size: 12px;
-    color: #9ca3af;
+    color: #8c8c8c;
   }
 }
 
 // 主内容区
 .content {
   flex: 1;
-  padding: 24px 32px;
+  padding: 20px 24px;
   overflow-y: auto;
 }
 
@@ -330,23 +385,23 @@ const handleCommand = async (command) => {
 
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
 }
 
 .fade-slide-enter-from {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateX(10px);
 }
 
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateX(-20px);
+  transform: translateX(-10px);
 }
 
 // 响应式
 @media (max-width: 768px) {
   .sidebar {
-    width: 80px;
+    width: 64px;
 
     .logo-text {
       display: none;
@@ -354,11 +409,15 @@ const handleCommand = async (command) => {
   }
 
   .main-area {
-    margin-left: 80px;
+    margin-left: 64px;
   }
 
   .content {
     padding: 16px;
+  }
+
+  .header {
+    padding: 0 16px;
   }
 }
 </style>

@@ -28,6 +28,12 @@
         <el-option label="仓鼠" value="仓鼠" />
         <el-option label="其他" value="其他" />
       </el-select>
+      <el-select v-model="filterGender" placeholder="性别" clearable @change="handleGenderFilter">
+        <el-option label="全部" value="" />
+        <el-option label="公" value="MALE" />
+        <el-option label="母" value="FEMALE" />
+        <el-option label="未知" value="UNKNOWN" />
+      </el-select>
     </div>
 
     <!-- 宠物卡片网格 -->
@@ -204,7 +210,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Edit, Delete, Calendar } from '@element-plus/icons-vue'
-import { page as getPets, create, update, deletePet, upload } from '@/api/pet'
+import { page as getPets, create, update, deletePet, upload, getByGender } from '@/api/pet'
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -214,6 +220,7 @@ const currentPage = ref(1)
 const pageSize = ref(12)
 const searchKeyword = ref('')
 const filterType = ref('')
+const filterGender = ref('')  // 性别筛选
 
 // 弹窗相关
 const dialogVisible = ref(false)
@@ -253,13 +260,23 @@ const filteredPets = computed(() => {
   return result
 })
 
-// 工具函数
+// 工具函数 - 适配后端枚举返回的label字符串
 const getGenderText = (gender) => {
+  // 后端现在返回的是枚举的label（"公"/"母"/"未知"）
+  if (typeof gender === 'string') {
+    const map = { '未知': '未知', '公': '♂ 公', '母': '♀ 母' }
+    return map[gender] || gender
+  }
+  // 兼容旧的数字格式
   const map = { 0: '未知', 1: '♂ 公', 2: '♀ 母' }
   return map[gender] || '未知'
 }
 
 const getGenderType = (gender) => {
+  if (typeof gender === 'string') {
+    const map = { '未知': 'info', '公': '', '母': 'danger' }
+    return map[gender] || 'info'
+  }
   const map = { 0: 'info', 1: '', 2: 'danger' }
   return map[gender] || 'info'
 }
@@ -283,6 +300,28 @@ const loadPets = async () => {
     total.value = res.data?.total || 0
   } catch (e) {
     console.error('加载失败:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 按性别筛选（调用后端接口）
+const handleGenderFilter = async (gender) => {
+  if (!gender) {
+    // 清空筛选，重新加载全部
+    loadPets()
+    return
+  }
+  loading.value = true
+  try {
+    const res = await getByGender(gender)
+    if (res.code === 200) {
+      pets.value = res.data || []
+      total.value = pets.value.length
+    }
+  } catch (e) {
+    console.error('性别筛选失败:', e)
+    ElMessage.error('筛选失败')
   } finally {
     loading.value = false
   }
