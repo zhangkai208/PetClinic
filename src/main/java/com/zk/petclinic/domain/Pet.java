@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zk.petclinic.enums.Petgender;
 import java.math.BigDecimal;
 import java.util.Date;
 import lombok.Data;
@@ -61,7 +62,7 @@ public class Pet {
      * 性别：0-未知，1-公，2-母
      */
     @TableField(value = "gender")
-    private Integer gender;
+    private Petgender gender;
 
     /**
      * 头像

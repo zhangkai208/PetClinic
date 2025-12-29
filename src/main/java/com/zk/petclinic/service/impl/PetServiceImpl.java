@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zk.petclinic.mapper.PetMapper;
 import com.zk.petclinic.service.PetService;
 import com.zk.petclinic.domain.Pet;
+import com.zk.petclinic.enums.Petgender;
 import com.zk.petclinic.util.QiniuOssUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,5 +64,13 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
         assert originalFilename != null;
         final String fileName = UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
         return QiniuOssUtil.uploadFile(fileName, file.getInputStream());
+    }
+
+    @Override
+    public List<Pet> findByGender(Petgender gender, Long ownerId) {
+        LambdaQueryWrapper<Pet> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Pet::getOwnerId, ownerId)
+                    .eq(Pet::getGender, gender);  // 直接使用枚举，MyBatis-Plus自动转换
+        return this.list(queryWrapper);
     }
 }

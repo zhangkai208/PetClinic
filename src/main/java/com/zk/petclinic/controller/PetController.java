@@ -2,6 +2,7 @@ package com.zk.petclinic.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.Pet;
+import com.zk.petclinic.enums.Petgender;
 import com.zk.petclinic.service.PetService;
 import com.zk.petclinic.util.ResultUtil;
 import com.zk.petclinic.util.ThreadLocalUtil;
@@ -68,5 +69,20 @@ public class PetController {
         result.setMessage("上传成功");
         result.setData(url);
         return result;
+    }
+
+    /**
+     * 根据性别查询当前用户的宠物
+     * @param gender 性别枚举：MALE(公)、FEMALE(母)、UNKNOWN(未知)
+     */
+    @GetMapping("/gender/{gender}")
+    public ResultUtil<List<Pet>> findByGender(@PathVariable Petgender gender) {
+        String userIdStr = ThreadLocalUtil.get();
+        if (userIdStr == null || userIdStr.isEmpty()) {
+            return ResultUtil.fail("请先登录");
+        }
+        Long userId = Long.valueOf(userIdStr);
+        List<Pet> pets = petService.findByGender(gender, userId);
+        return ResultUtil.success(pets);
     }
 }

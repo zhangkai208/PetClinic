@@ -1,6 +1,7 @@
 package com.zk.petclinic.service;
 
 import com.zk.petclinic.domain.Pet;
+import com.zk.petclinic.enums.Petgender;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,4 +40,9 @@ public interface PetService extends IService<Pet> {
      * 上传宠物图片
      */
     String uploadFile(MultipartFile file) throws IOException;
+
+    /**
+     * 根据性别查询当前用户的宠物
+     */
+    List<Pet> findByGender(Petgender gender, Long ownerId);
 }

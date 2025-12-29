@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zk.petclinic.enums.ServiceProviderStatus;
+import com.zk.petclinic.enums.ServiceProviderType;
 import java.util.Date;
 import lombok.Data;
 
@@ -36,7 +38,7 @@ public class ServiceProvider {
      * 类型：0医院、1美容店、2寄养、3训练
      */
     @TableField(value = "type")
-    private String type;
+    private ServiceProviderType type;
 
     /**
      * 地址
@@ -60,7 +62,7 @@ public class ServiceProvider {
      * 状态：0-待审核，1-已通过，2-已拒绝
      */
     @TableField(value = "status")
-    private Integer status;
+    private ServiceProviderStatus status;
 
     /**
      * 
