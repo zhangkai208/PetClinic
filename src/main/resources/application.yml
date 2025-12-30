@@ -22,6 +22,7 @@ spring:
       base-url: https://ark.cn-beijing.volces.com/api/v3
       api-key:
       chat:
+        completions-path: /chat/completions
         options:
           model: deepseek-v3-250324
 
@@ -54,3 +55,4 @@ logging:
   level:
     com.zk.petclinic: debug
     org.springframework.web: info
+    org.springframework.ai.chat.client.advisor: debug
