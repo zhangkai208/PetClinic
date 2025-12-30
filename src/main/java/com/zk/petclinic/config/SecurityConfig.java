@@ -1,6 +1,7 @@
 package com.zk.petclinic.config;
 
 import com.zk.petclinic.security.JwtAuthenticationFilter;
+import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +41,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             // 配置请求授权（注意：规则按顺序匹配，先匹配到的规则会生效）
             .authorizeHttpRequests(auth -> auth
+                // 0. 允许异步分发请求（SSE流式响应完成后的async dispatch）
+                .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                 // 1. 公开接口（不需要认证）- 必须放在最前面
                 .requestMatchers(
                     "/sysUser/login",      // 登录接口

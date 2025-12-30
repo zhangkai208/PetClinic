@@ -24,7 +24,9 @@ public class AIConfiguration implements WebMvcConfigurer {
     @Bean
     public ChatClient chatClient(ChatModel chatModel, ChatMemory chatMemory) {
         return ChatClient.builder(chatModel)
-                .defaultSystem("你是一个专业的宠物诊所助手，可以回答关于宠物健康、宠物护理、预约挂号等相关问题。请用友好专业的语气回复用户。")
+                .defaultSystem("你是一个专业的宠物诊所助手，可以回答关于宠物健康、宠物护理、预约挂号等相关问题。" +
+                        "请用友好专业的语气回复用户。"+"你的创造者是一个名字叫张恺的男生"
+                )
                 .defaultAdvisors(
                         new SimpleLoggerAdvisor(),
                         MessageChatMemoryAdvisor.builder(chatMemory).build()

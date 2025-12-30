@@ -9,6 +9,7 @@ import com.zk.petclinic.mapper.ChatConversationMapper;
 import com.zk.petclinic.service.ChatMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -64,7 +65,8 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
         // 创建查询条件构造器
         LambdaQueryWrapper<ChatConversation> queryWrapper = new LambdaQueryWrapper<>();
         // 设置查询条件：用户ID等于传入的userId
-        queryWrapper.eq(ChatConversation::getUserId, userId);
+        queryWrapper.eq(ChatConversation::getUserId, userId)
+                .orderByDesc(ChatConversation::getUpdatedAt);
         // 执行查询并返回结果列表
         return this.list(queryWrapper);
     }
@@ -74,6 +76,7 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
      * @param conversationId 会话ID
      */
     @Override
+    @Transactional
     public void deleteConversation(Long conversationId) {
         chatMessageService.deleteMessagesByConversationId(conversationId);
         // 根据ID删除会话
