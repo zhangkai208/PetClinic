@@ -2,6 +2,7 @@ package com.zk.petclinic.controller;
 
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +17,11 @@ public class ChatController {
     @Autowired
     private ChatClient chatClient;
     @GetMapping(value = "/chat", produces = "text/html;charset=utf-8")
-    public Flux<String> chat(@RequestParam String message) {
+    public Flux<String> chat(@RequestParam String message,
+                             @RequestParam(defaultValue = "default") String id) {
         return chatClient.prompt()
                 .user(message)  // 使用用户传入的message
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, id))  // 使用用户传入的id
                 .stream()
                 .content();
     }
