@@ -26,6 +26,12 @@ const routes = [
         meta: { title: '宠物相册' }
       },
       {
+        path: 'chat',
+        name: 'aiChat',
+        component: () => import('@/views/chat/AIChat.vue'),
+        meta: { title: 'AI助手' }
+      },
+      {
         path: 'profile',
         name: 'profile',
         component: () => import('@/views/Profile.vue'),
