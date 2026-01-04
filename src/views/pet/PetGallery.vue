@@ -52,7 +52,7 @@
       <!-- 空状态 -->
       <el-empty 
         v-if="!loading && displayPhotos.length === 0" 
-        description="暂无照片，去【我的宠物】页面添加照片吧~"
+        description="暂无照片，去【宝贝宠物】页面添加照片吧~"
         :image-size="120"
         class="empty-state"
       />

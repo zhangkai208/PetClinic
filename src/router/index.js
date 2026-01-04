@@ -17,7 +17,7 @@ const routes = [
         path: 'pets',
         name: 'pets',
         component: () => import('@/views/pet/Pets.vue'),
-        meta: { title: '我的宠物' }
+        meta: { title: '宠物宝贝' }
       },
       {
         path: 'gallery',

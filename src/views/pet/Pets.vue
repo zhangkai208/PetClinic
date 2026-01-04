@@ -3,7 +3,7 @@
     <!-- 页面头部 -->
     <div class="page-header">
       <div class="header-info">
-        <h1>我的宠物</h1>
+        <h1>宠物宝贝</h1>
         <p>管理您的宠物信息</p>
       </div>
       <el-button type="primary" :icon="Plus" @click="openDialog()">

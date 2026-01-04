@@ -20,7 +20,7 @@
       >
         <el-menu-item index="/pets">
           <el-icon><HomeFilled /></el-icon>
-          <template #title>我的宠物</template>
+          <template #title>宠物宝贝</template>
         </el-menu-item>
         <el-menu-item index="/gallery">
           <el-icon><Picture /></el-icon>

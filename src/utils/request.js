@@ -4,8 +4,7 @@ import { useTokenStore } from '@/stores/token'
 import router from '@/router'
 
 const request = axios.create({
-  baseURL: '/api',
-  timeout: 10000
+  baseURL: '/api'
 })
 
 request.interceptors.request.use((config) => {
