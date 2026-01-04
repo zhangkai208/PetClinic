@@ -1,5 +1,6 @@
 package com.zk.petclinic.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zk.petclinic.domain.ServiceProvider;
@@ -29,9 +30,11 @@ public class ServiceProviderServiceImpl extends ServiceImpl<ServiceProviderMappe
     }
 
     @Override
-    public Page<ServiceProvider> pageServiceProvider(long pageNo, long pageSize) {
+    public Page<ServiceProvider> pageServiceProvider(long pageNo, long pageSize,long userId) {
+        LambdaQueryWrapper<ServiceProvider> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ServiceProvider::getUserId, userId);
         Page<ServiceProvider> serviceProviderPage = new Page<>(pageNo, pageSize);
-        return this.page(serviceProviderPage);
+        return this.page(serviceProviderPage, queryWrapper);
     }
 
     @Override
@@ -41,7 +44,20 @@ public class ServiceProviderServiceImpl extends ServiceImpl<ServiceProviderMappe
 
     @Override
     public boolean deleteServiceProvider(List<Long> ids) {
-        return this.removeByIds(ids);
+        for (Long id : ids) {
+            ServiceProvider byId = this.getById(id);
+            if(byId != null){
+                if(byId.getStatus() == ServiceProviderStatus.PENDING_REVIEW){
+                    return this.removeById(byId);
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public List<ServiceProvider> listServiceProvider() {
+        return this.list();
     }
 }
 

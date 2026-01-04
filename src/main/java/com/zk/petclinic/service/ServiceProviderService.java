@@ -15,9 +15,11 @@ public interface ServiceProviderService extends IService<ServiceProvider> {
 
     boolean create(ServiceProvider serviceProvider, Long userId);
 
-    Page<ServiceProvider> pageServiceProvider(long pageNo, long pageSize);
+    Page<ServiceProvider> pageServiceProvider(long pageNo, long pageSize,long userId);
 
     boolean updateServiceProvider(ServiceProvider serviceProvider);
 
     boolean deleteServiceProvider(List<Long> ids);
+
+    List<ServiceProvider> listServiceProvider();
 }

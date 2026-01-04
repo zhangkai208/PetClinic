@@ -41,9 +41,21 @@ public class ServiceProviderController {
     public ResultUtil<Page<ServiceProvider>> page (@RequestParam(defaultValue = "1") long pageNo,
                                                    @RequestParam(defaultValue = "10") long pageSize
     ){
-        Page<ServiceProvider> page = serviceProviderService.pageServiceProvider(pageNo,pageSize);
+        String userIdStr = ThreadLocalUtil.get();
+        if (userIdStr == null || userIdStr.isEmpty()) {
+            return ResultUtil.fail("请先登录");
+        }
+        Long userId = Long.valueOf(userIdStr);
+        Page<ServiceProvider> page = serviceProviderService.pageServiceProvider(pageNo,pageSize,userId);
         return ResultUtil.success(page);
     }
+
+    @GetMapping("/list")
+    public ResultUtil<List<ServiceProvider>> list(){
+        List<ServiceProvider> serviceProviders = serviceProviderService.listServiceProvider();
+        return ResultUtil.success(serviceProviders);
+    }
+
     @PutMapping("/update")
     public ResultUtil update(@RequestBody ServiceProvider serviceProvider){
         boolean updated = serviceProviderService.updateServiceProvider(serviceProvider);
