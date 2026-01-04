@@ -117,7 +117,7 @@
               <el-form-item prop="nickname">
                 <el-input 
                   v-model="registerForm.nickname" 
-                  placeholder="请输入昵称（选填）"
+                  placeholder="请输入昵称"
                   :prefix-icon="UserFilled"
                 />
               </el-form-item>
@@ -196,6 +196,10 @@ const registerRules = {
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
     { validator: validateConfirmPassword, trigger: 'blur' }
+  ],
+  nickname: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 2, max: 20, message: '昵称长度为2-20个字符', trigger: 'blur' }
   ]
 }
 

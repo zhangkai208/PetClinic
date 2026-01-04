@@ -59,6 +59,7 @@
         <div class="pet-info">
           <h3 class="pet-name">{{ pet.name }}</h3>
           <p class="pet-breed">{{ pet.type }} · {{ pet.breed || '未知品种' }}</p>
+          <p class="pet-owner" v-if="isAdmin && pet.ownerNickname">👤 {{ pet.ownerNickname }}</p>
           
           <div class="pet-details">
             <div class="detail-item" v-if="pet.birthDate">
@@ -601,7 +602,13 @@ onMounted(() => {
   .pet-breed {
     font-size: 14px;
     color: #6b7280;
-    margin: 0 0 16px 0;
+    margin: 0 0 8px 0;
+  }
+
+  .pet-owner {
+    font-size: 12px;
+    color: #9ca3af;
+    margin: 0 0 12px 0;
   }
 }
 

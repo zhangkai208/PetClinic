@@ -34,6 +34,11 @@
           <el-icon><User /></el-icon>
           <template #title>个人中心</template>
         </el-menu-item>
+        <!-- 服务商菜单 -->
+        <el-menu-item v-if="canSeeProviders" index="/service-providers">
+          <el-icon><OfficeBuilding /></el-icon>
+          <template #title>服务商管理</template>
+        </el-menu-item>
         <!-- 管理员菜单 -->
         <el-menu-item v-if="isAdmin" index="/admin/users">
           <el-icon><UserFilled /></el-icon>
@@ -103,7 +108,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'
@@ -121,6 +126,8 @@ const userInfo = computed(() => userInfoStore.userInfo || {})
 const isAdmin = computed(() => userInfo.value.roleType === 3)
 // 宠物主人(1)和管理员(3)可以看到宠物菜单，服务商(2)看不到
 const canSeePets = computed(() => userInfo.value.roleType === 1 || userInfo.value.roleType === 3)
+// 服务商(2)和管理员(3)可以看到服务商管理菜单
+const canSeeProviders = computed(() => userInfo.value.roleType === 2 || userInfo.value.roleType === 3)
 const activeMenu = computed(() => route.path)
 const currentTitle = computed(() => route.meta?.title || '首页')
 
