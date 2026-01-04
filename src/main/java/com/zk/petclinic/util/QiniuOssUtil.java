@@ -18,7 +18,7 @@ public class QiniuOssUtil {
     private static final String SECRET_KEY = "";
     // 存储空间名称
     private static final String BUCKET_NAME = "";
-    // 七牛云CDN测试域名 (注意：只支持HTTP，不支持HTTPS)
+    // 七牛云CDN自定义域名
     private static final String QINIU_DOMAIN = "";
     /**
      * 上传文件到七牛云
@@ -27,8 +27,8 @@ public class QiniuOssUtil {
      * @return 文件的公网访问地址
      */
     public static String uploadFile(String objectName, InputStream inputStream){
-        // 华东区域配置
-        Configuration cfg = new Configuration(Region.region0());
+        // 亚太-新加坡区域配置
+        Configuration cfg = new Configuration(Region.regionAs0());
         // 使用普通上传而不是分片上传
         UploadManager uploadManager = new UploadManager(cfg);
 

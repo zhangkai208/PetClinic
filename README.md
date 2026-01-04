@@ -131,3 +131,47 @@
 - **第 6 周**：整理部署脚本、完成系统联调与压力测试，输出所有论文所需的图表和截图。
 
 > 要求：每完成一个模块，至少做三件事：**代码实现 + 接口文档 + 截图/图表**，方便后期直接写入毕业论文。*** End Patch
+
+完整实现步骤总结
+
+确认问题原因
+测试域名（如 xxx.bkt.clouddn.com）超过30天自动回收或流量超限，导致外链失效。
+决定使用自定义域名
+选择已备案域名 zhangkairedzack.top（你买的 .top 域名）。
+在七牛云绑定自定义域名
+登录七牛控制台 → 对象存储 → 域名管理
+添加域名 zhangkairedzack.top
+触发域名所有权验证（需要添加 TXT 记录）
+
+发现 DNS 托管在 Cloudflare
+原来域名 NS 已指向 Cloudflare（nick.ns.cloudflare.com 和 daphne.ns.cloudflare.com）
+因此所有 DNS 操作必须在 Cloudflare 完成，阿里云解析无效
+
+完成域名所有权验证（TXT 记录）
+从七牛验证页面复制最新 TXT 值（verify_ 开头的长字符串）
+登录 Cloudflare → 选择域名 → DNS → Records
+添加记录：
+Type: TXT
+Name: verification
+Content: 七牛给的完整验证串
+Proxy status: DNS only（灰云）
+保存 → 等待 1~5 分钟 → 回七牛点击“点此验证” → 通过（绿勾）
+
+配置 CNAME 记录（核心步骤）
+在七牛“如何配置 CNAME”页面获取 CNAME 值（zhangkairedzack-top-idvqy1m.qiniudns.com）
+回到 Cloudflare DNS → 添加记录：
+Type: CNAME
+Name: @（使用主域名 zhangkairedzack.top）
+Target: zhangkairedzack-top-idvqy1m.qiniudns.com
+Proxy status: DNS only（灰云，必须！）
+TTL: Auto
+保存 → 等待 5~15 分钟生效
+
+七牛侧设置外链默认域名
+去空间（pet-clinic） → 文件管理
+右上角“外链默认域名”下拉选择 zhangkairedzack.top → 保存
+
+验证成功
+直接浏览器访问 http://zhangkairedzack.top/001.png → 图片正常显示
+七牛控制台文件列表外链也变成你的自定义域名
+（状态显示“未配置”是七牛后台缓存延迟，不影响实际使用，后续会自动变绿）
