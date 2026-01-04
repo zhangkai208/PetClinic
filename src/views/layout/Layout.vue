@@ -18,11 +18,11 @@
         active-text-color="#fff"
         router
       >
-        <el-menu-item index="/pets">
+        <el-menu-item v-if="canSeePets" index="/pets">
           <el-icon><HomeFilled /></el-icon>
           <template #title>宠物宝贝</template>
         </el-menu-item>
-        <el-menu-item index="/gallery">
+        <el-menu-item v-if="canSeePets" index="/gallery">
           <el-icon><Picture /></el-icon>
           <template #title>宠物相册</template>
         </el-menu-item>
@@ -119,6 +119,8 @@ const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726
 
 const userInfo = computed(() => userInfoStore.userInfo || {})
 const isAdmin = computed(() => userInfo.value.roleType === 3)
+// 宠物主人(1)和管理员(3)可以看到宠物菜单，服务商(2)看不到
+const canSeePets = computed(() => userInfo.value.roleType === 1 || userInfo.value.roleType === 3)
 const activeMenu = computed(() => route.path)
 const currentTitle = computed(() => route.meta?.title || '首页')
 

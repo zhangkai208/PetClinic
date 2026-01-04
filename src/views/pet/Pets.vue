@@ -220,7 +220,8 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Edit, Delete, Calendar, Camera } from '@element-plus/icons-vue'
-import { page as getPets, create, update, deletePet, upload, getByGender, uploadPhotos } from '@/api/pet'
+import { page as getPets, list as getAllPets, create, update, deletePet, upload, getByGender, uploadPhotos } from '@/api/pet'
+import { useUserInfoStore } from '@/stores/userinfo'
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -231,6 +232,10 @@ const pageSize = ref(12)
 const searchKeyword = ref('')
 const filterType = ref('')
 const filterGender = ref('')  // 性别筛选
+
+// 用户信息和角色判断
+const userInfoStore = useUserInfoStore()
+const isAdmin = computed(() => userInfoStore.userInfo?.roleType === 3)
 
 // 弹窗相关
 const dialogVisible = ref(false)
@@ -305,9 +310,17 @@ const formatDate = (date) => {
 const loadPets = async () => {
   loading.value = true
   try {
-    const res = await getPets(currentPage.value, pageSize.value)
-    pets.value = res.data?.records || []
-    total.value = res.data?.total || 0
+    if (isAdmin.value) {
+      // 管理员：获取全部宠物
+      const res = await getAllPets()
+      pets.value = res.data || []
+      total.value = pets.value.length
+    } else {
+      // 普通用户：分页获取自己的宠物
+      const res = await getPets(currentPage.value, pageSize.value)
+      pets.value = res.data?.records || []
+      total.value = res.data?.total || 0
+    }
   } catch (e) {
     console.error('加载失败:', e)
   } finally {

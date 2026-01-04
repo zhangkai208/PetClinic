@@ -71,13 +71,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
-import { page as getPets } from '@/api/pet'
+import { page as getPets, list as getAllPets } from '@/api/pet'
+import { useUserInfoStore } from '@/stores/userinfo'
 
 const loading = ref(false)
 const pets = ref([])
 const selectedPetId = ref(0)
 const showViewer = ref(false)
 const viewerIndex = ref(0)
+
+// 用户信息和角色判断
+const userInfoStore = useUserInfoStore()
+const isAdmin = computed(() => userInfoStore.userInfo?.roleType === 3)
 
 // 解析所有宠物的照片
 const allPhotos = computed(() => {
@@ -116,8 +121,15 @@ const viewerList = computed(() => displayPhotos.value.map(p => p.url))
 const loadPets = async () => {
   loading.value = true
   try {
-    const res = await getPets(1, 100) // 获取所有宠物
-    pets.value = res.data?.records || []
+    if (isAdmin.value) {
+      // 管理员：获取全部宠物
+      const res = await getAllPets()
+      pets.value = res.data || []
+    } else {
+      // 普通用户：获取自己的宠物
+      const res = await getPets(1, 100)
+      pets.value = res.data?.records || []
+    }
   } catch (e) {
     console.error('加载失败:', e)
   } finally {

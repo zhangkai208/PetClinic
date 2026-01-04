@@ -1,8 +1,13 @@
 import request from '@/utils/request'
 
-// 分页查询宠物
+// 分页查询宠物（当前用户的）
 export const page = (pageNo = 1, pageSize = 10) => {
     return request.get('/pet/page', { params: { pageNo, pageSize } })
+}
+
+// 获取全部宠物（仅管理员可用）
+export const list = () => {
+    return request.get('/pet/list')
 }
 
 // 新增宠物
