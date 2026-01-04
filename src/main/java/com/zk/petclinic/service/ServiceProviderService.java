@@ -1,7 +1,10 @@
 package com.zk.petclinic.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.ServiceProvider;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author 张恺
@@ -10,4 +13,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ServiceProviderService extends IService<ServiceProvider> {
 
+    boolean create(ServiceProvider serviceProvider, Long userId);
+
+    Page<ServiceProvider> pageServiceProvider(long pageNo, long pageSize);
+
+    boolean updateServiceProvider(ServiceProvider serviceProvider);
+
+    boolean deleteServiceProvider(List<Long> ids);
 }
