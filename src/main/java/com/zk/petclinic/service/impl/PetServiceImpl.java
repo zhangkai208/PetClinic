@@ -34,6 +34,11 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
     }
 
     @Override
+    public List<Pet> list(List<Pet> petList) {
+        return this.list(petList);
+    }
+
+    @Override
     public boolean createPet(Pet pet, Long ownerId) {
         pet.setOwnerId(ownerId);
         pet.setCreateTime(new Date());

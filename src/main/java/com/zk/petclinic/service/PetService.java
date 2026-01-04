@@ -21,6 +21,15 @@ public interface PetService extends IService<Pet> {
      */
     Page<Pet> pagePetsByOwner(long pageNo, long pageSize, Long ownerId);
 
+/**
+ * 宠物列表处理方法
+ * 该方法接收一个宠物列表作为输入参数，并返回处理后的宠物列表
+ *
+ * @param petList 输入的宠物列表，包含需要处理的宠物对象
+ * @return 返回处理后的宠物列表，具体处理逻辑取决于方法实现
+ */
+    List<Pet> list(List<Pet> petList);
+
     /**
      * 创建宠物
      */

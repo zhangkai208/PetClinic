@@ -2,8 +2,10 @@ package com.zk.petclinic.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.Pet;
+import com.zk.petclinic.domain.SysUser;
 import com.zk.petclinic.enums.Petgender;
 import com.zk.petclinic.service.PetService;
+import com.zk.petclinic.service.SysUserService;
 import com.zk.petclinic.util.ResultUtil;
 import com.zk.petclinic.util.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ import java.util.List;
 public class PetController {
     @Autowired
     private PetService petService;
+    
+    @Autowired
+    private SysUserService sysUserService;
 
     @GetMapping("/page")
     public ResultUtil<Page<Pet>> page(@RequestParam(defaultValue = "1") long pageNo,
@@ -29,6 +34,21 @@ public class PetController {
         Long userId = Long.valueOf(userIdStr);
         Page<Pet> page = petService.pagePetsByOwner(pageNo, pageSize, userId);
         return ResultUtil.success(page);
+    }
+
+    @GetMapping("/list")
+    public ResultUtil<List<Pet>> list() {
+        List<Pet> petList = petService.list();
+        // 填充每个宠物的主人昵称
+        for (Pet pet : petList) {
+            if (pet.getOwnerId() != null) {
+                SysUser owner = sysUserService.getById(pet.getOwnerId());
+                if (owner != null) {
+                    pet.setOwnerNickname(owner.getNickname() != null ? owner.getNickname() : owner.getUsername());
+                }
+            }
+        }
+        return ResultUtil.success(petList);
     }
 
     @PutMapping("/{id}")

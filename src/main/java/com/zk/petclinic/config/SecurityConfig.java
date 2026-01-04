@@ -58,6 +58,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/sysUser/upload").authenticated()
                 // 查看用户信息（已登录即可）
                 .requestMatchers(HttpMethod.GET, "/sysUser/{id}").authenticated()
+                //修改用户信息（已登录即可）
+                .requestMatchers(HttpMethod.PUT, "/sysUser/{id}").authenticated()
                 // 用户管理（仅ADMIN）
                 .requestMatchers(HttpMethod.GET, "/sysUser/page").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/sysUser/create").hasRole("ADMIN")
@@ -66,7 +68,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/sysUser").hasRole("ADMIN")
                 
                 // ========== 3. 宠物模块 ==========
-                // 宠物管理（宠物主人OWNER和管理员ADMIN可访问）
+                // 查看全部宠物列表（仅ADMIN）
+                .requestMatchers(HttpMethod.GET, "/pet/list").hasRole("ADMIN")
+                // 其他宠物管理接口（宠物主人OWNER和管理员ADMIN可访问）
                 .requestMatchers("/pet/**").hasAnyRole("OWNER", "ADMIN")
                 
                 // ========== 4. AI聊天模块 ==========

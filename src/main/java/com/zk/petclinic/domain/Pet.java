@@ -29,6 +29,12 @@ public class Pet {
     private Long ownerId;
 
     /**
+     * 主人昵称
+     * */
+    @TableField(exist = false)
+    private String ownerNickname;
+
+    /**
      * 宠物昵称
      */
     @TableField(value = "name")
