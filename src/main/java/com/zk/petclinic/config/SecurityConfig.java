@@ -5,6 +5,7 @@ import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -43,29 +44,58 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 0. 允许异步分发请求（SSE流式响应完成后的async dispatch）
                 .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
-                // 1. 公开接口（不需要认证）- 必须放在最前面
+                
+                // ========== 1. 公开接口（无需认证） ==========
                 .requestMatchers(
                     "/sysUser/login",      // 登录接口
                     "/sysUser/register",   // 注册接口
                     "/error"               // 错误页面
                 ).permitAll()
-                // 2. 用户常用接口（已登录即可访问）
-                .requestMatchers(
-                    "/sysUser/logout",     // 退出登录
-                    "/sysUser/page",       // 分页查询用户
-                    "/sysUser/{id}"        // 根据ID查询用户
-                ).authenticated()
-                // 3. 用户管理接口（需要ADMIN角色）
-                .requestMatchers(
-                    "/sysUser/create",     // 创建用户
-                    "/sysUser/{id}",       // 更新/删除用户（PUT/DELETE）
-                    "/sysUser"             // 批量删除
-                ).hasRole("ADMIN")
-                // 4. 管理员接口（需要ADMIN角色）
+                
+                // ========== 2. 用户模块 ==========
+                // 用户退出、上传头像（已登录即可）
+                .requestMatchers(HttpMethod.POST, "/sysUser/logout").authenticated()
+                .requestMatchers(HttpMethod.POST, "/sysUser/upload").authenticated()
+                // 查看用户信息（已登录即可）
+                .requestMatchers(HttpMethod.GET, "/sysUser/{id}").authenticated()
+                // 用户管理（仅ADMIN）
+                .requestMatchers(HttpMethod.GET, "/sysUser/page").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/sysUser/create").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/sysUser/{id}").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/sysUser/{id}").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/sysUser").hasRole("ADMIN")
+                
+                // ========== 3. 宠物模块 ==========
+                // 宠物管理（宠物主人OWNER和管理员ADMIN可访问）
+                .requestMatchers("/pet/**").hasAnyRole("OWNER", "ADMIN")
+                
+                // ========== 4. AI聊天模块 ==========
+                // AI对话（所有已登录用户可用）
+                .requestMatchers("/ChatConversation/**").authenticated()
+                .requestMatchers("/chatMessage/**").authenticated()
+                
+                // ========== 5. 预约模块 ==========
+                // 预约功能（宠物主人和管理员可用）
+                .requestMatchers("/appointment/**").hasAnyRole("OWNER", "ADMIN")
+                
+                // ========== 6. 健康记录模块 ==========
+                // 健康记录查看（主人、服务商、管理员都可读）
+                .requestMatchers(HttpMethod.GET, "/healthRecord/**").hasAnyRole("OWNER", "PROVIDER", "ADMIN")
+                // 健康记录增删改（仅服务商和管理员）
+                .requestMatchers("/healthRecord/**").hasAnyRole("PROVIDER", "ADMIN")
+                
+                // ========== 7. 服务商模块 ==========
+                // 服务商信息查看（服务商和管理员可查看）
+                .requestMatchers(HttpMethod.GET, "/serviceProviders/**").hasAnyRole("PROVIDER", "ADMIN")
+                // 服务商管理（仅管理员）
+                .requestMatchers("/serviceProviders/**").hasRole("ADMIN")
+                
+                // ========== 8. 通用管理接口 ==========
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // 5. 服务商接口（需要PROVIDER或ADMIN角色）
                 .requestMatchers("/provider/**").hasAnyRole("PROVIDER", "ADMIN")
-                // 6. 其他接口需要认证（登录后即可访问，不限制角色）
+                
+                // ========== 9. 默认规则 ==========
+                // 其他接口需要认证（登录后即可访问，不限制角色）
                 .anyRequest().authenticated()
             )
             // 添加JWT过滤器（在UsernamePasswordAuthenticationFilter之前）
