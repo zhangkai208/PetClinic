@@ -1,6 +1,7 @@
 package com.zk.petclinic.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zk.petclinic.enums.SysUserRoleType;
 import com.zk.petclinic.util.JWTUtil;
 import com.zk.petclinic.util.ResultUtil;
 import com.zk.petclinic.util.ThreadLocalUtil;
@@ -64,16 +65,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 这里根据roleType判断角色类型：1-宠物主人，2-服务商，3-管理员
             String role = "ROLE_USER";
             if (roleType != null) {
-                switch (roleType) {
-                    case 1:
-                        role = "ROLE_OWNER";  // 宠物主人
-                        break;
-                    case 2:
-                        role = "ROLE_PROVIDER";  // 服务商
-                        break;
-                    case 3:
-                        role = "ROLE_ADMIN";  // 管理员
-                        break;
+                SysUserRoleType roleTypeEnum = SysUserRoleType.getEnumByValue(roleType);
+                if (roleTypeEnum != null) {
+                    switch (roleTypeEnum) {
+                        case OWNER:
+                            role = "ROLE_OWNER";  // 宠物主人
+                            break;
+                        case PROVIDER:
+                            role = "ROLE_PROVIDER";  // 服务商
+                            break;
+                        case ADMIN:
+                            role = "ROLE_ADMIN";  // 管理员
+                            break;
+                    }
                 }
             }
 
