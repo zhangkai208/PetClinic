@@ -89,7 +89,10 @@ public class SecurityConfig {
                 .requestMatchers("/healthRecord/**").hasAnyRole("PROVIDER", "ADMIN")
                 
                 // ========== 7. 服务商模块 ==========
-                // 服务商信息（服务商和管理员可查看和管理）
+                // 服务商列表查看（主人、服务商、管理员都可读，用于预约选择）
+                .requestMatchers(HttpMethod.GET, "/serviceProviders/page").hasAnyRole("OWNER", "PROVIDER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/serviceProviders/list").hasAnyRole("OWNER", "PROVIDER", "ADMIN")
+                // 服务商增删改（仅服务商和管理员）
                 .requestMatchers("/serviceProviders/**").hasAnyRole("PROVIDER", "ADMIN")
                 
                 // ========== 8. 通用管理接口 ==========
