@@ -79,8 +79,8 @@ public class SecurityConfig {
                 .requestMatchers("/chatMessage/**").authenticated()
                 
                 // ========== 5. 预约模块 ==========
-                // 预约功能（宠物主人和管理员可用）
-                .requestMatchers("/appointment/**").hasAnyRole("OWNER", "ADMIN")
+                // 预约功能（都可用）
+                .requestMatchers("/appointment/**").hasAnyRole("OWNER", "PROVIDER", "ADMIN")
                 
                 // ========== 6. 健康记录模块 ==========
                 // 健康记录查看（主人、服务商、管理员都可读）
