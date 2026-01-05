@@ -2,18 +2,18 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.zk.generator.mapper.ServiceProviderMapper">
+<mapper namespace="com.zk.petclinic.mapper.ServiceProviderMapper">
 
     <resultMap id="BaseResultMap" type="com.zk.petclinic.domain.ServiceProvider">
             <id property="id" column="id" />
-            <result property="user_id" column="user_id" />
+            <result property="userId" column="user_id" />
             <result property="name" column="name" />
             <result property="type" column="type" />
             <result property="address" column="address" />
             <result property="phone" column="phone" />
             <result property="license" column="license" />
             <result property="status" column="status" />
-            <result property="create_time" column="create_time" />
+            <result property="createTime" column="create_time" />
     </resultMap>
 
     <sql id="Base_Column_List">
