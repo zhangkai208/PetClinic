@@ -8,6 +8,24 @@
       </div>
     </div>
 
+    <!-- 服务商未审核通过提示 -->
+    <div v-if="isProvider && !isProviderApproved" class="provider-notice">
+      <el-result
+        icon="warning"
+        title="服务商资质审核中"
+        sub-title="您的服务商资质尚未审核通过，审核通过后可查看和管理宠物健康记录"
+      >
+        <template #extra>
+          <el-button type="primary" @click="$router.push('/service-providers')">
+            前往服务商管理
+          </el-button>
+        </template>
+      </el-result>
+    </div>
+
+    <!-- 主要内容区域（仅审核通过的服务商、宠物主人、管理员可见） -->
+    <template v-if="canAccessContent">
+
     <!-- 宠物选择器 -->
     <div class="pet-selector">
       <el-select 
@@ -33,6 +51,7 @@
       </el-select>
       
       <el-button 
+        v-if="canEdit"
         type="primary" 
         :icon="Plus" 
         @click="openDialog()" 
@@ -102,10 +121,13 @@
         </div>
 
         <div class="record-actions">
-          <el-button text type="primary" @click="openDialog(record)">
+          <el-button text type="info" @click="viewDetail(record)">
+            <el-icon><View /></el-icon>
+          </el-button>
+          <el-button v-if="canEdit" text type="primary" @click="openDialog(record)">
             <el-icon><Edit /></el-icon>
           </el-button>
-          <el-button text type="danger" @click="handleDelete(record)">
+          <el-button v-if="canEdit" text type="danger" @click="handleDelete(record)">
             <el-icon><Delete /></el-icon>
           </el-button>
         </div>
@@ -121,7 +143,7 @@
     </div>
 
     <!-- 未选择宠物提示 -->
-    <div class="empty-pet-hint" v-if="!selectedPetId">
+    <div class="empty-pet-hint" v-if="!selectedPetId && canAccessContent">
       <el-empty description="请在上方选择一个宠物，查看或添加健康记录" :image-size="160" />
     </div>
 
@@ -135,6 +157,7 @@
         @current-change="loadRecords"
       />
     </div>
+    </template>
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog 
@@ -207,9 +230,10 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, Calendar, AlarmClock } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Calendar, AlarmClock, View } from '@element-plus/icons-vue'
 import { page as getRecords, create, update, deleteBatch } from '@/api/healthRecord'
 import { page as getPets, list as getAllPets } from '@/api/pet'
+import { page as getProviders } from '@/api/serviceProvider'
 import { useUserInfoStore } from '@/stores/userinfo'
 
 const loading = ref(false)
@@ -225,6 +249,26 @@ const activeTab = ref('all')
 // 用户信息
 const userInfoStore = useUserInfoStore()
 const isAdmin = computed(() => userInfoStore.userInfo?.roleType === 3)
+const isProvider = computed(() => userInfoStore.userInfo?.roleType === 2)
+const isOwner = computed(() => userInfoStore.userInfo?.roleType === 1)
+
+// 服务商审核状态
+const providerStatus = ref(null)  // null=未加载, '已通过'=审核通过, 其他=未通过
+const isProviderApproved = computed(() => providerStatus.value === '已通过')
+
+// 是否可以访问健康记录内容
+const canAccessContent = computed(() => {
+  // 宠物主人和管理员直接可以访问
+  if (isOwner.value || isAdmin.value) return true
+  // 服务商需要审核通过
+  if (isProvider.value) return isProviderApproved.value
+  return false
+})
+
+// 是否可以增删改（仅服务商和管理员）
+const canEdit = computed(() => {
+  return isProvider.value || isAdmin.value
+})
 
 // 弹窗相关
 const dialogVisible = ref(false)
@@ -290,11 +334,19 @@ const isUpcoming = (nextDate) => {
 
 // 加载宠物列表
 const loadPets = async () => {
+  // 如果是服务商且未审核通过，不加载宠物
+  if (isProvider.value && !isProviderApproved.value) {
+    return
+  }
+  
   try {
-    if (isAdmin.value) {
+    const roleType = userInfoStore.userInfo?.roleType
+    // 服务商(2)和管理员(3)可以查看所有宠物
+    if (roleType === 2 || roleType === 3) {
       const res = await getAllPets()
       petList.value = res.data || []
     } else {
+      // 宠物主人只能查看自己的宠物
       const res = await getPets(1, 100)
       petList.value = res.data?.records || []
     }
@@ -305,6 +357,22 @@ const loadPets = async () => {
     }
   } catch (e) {
     console.error('加载宠物失败:', e)
+  }
+}
+
+// 检查服务商审核状态
+const checkProviderStatus = async () => {
+  if (!isProvider.value) return
+  
+  try {
+    const res = await getProviders(1, 1)
+    const providers = res.data?.records || []
+    if (providers.length > 0) {
+      // 获取第一个服务商的状态
+      providerStatus.value = providers[0].status
+    }
+  } catch (e) {
+    console.error('检查服务商状态失败:', e)
   }
 }
 
@@ -382,6 +450,24 @@ const handleSubmit = async () => {
   }
 }
 
+// 查看详情
+const viewDetail = (record) => {
+  const typeNames = { 1: '疫苗接种', 2: '驱虫记录', 3: '用药记录', 4: '健康笔记' }
+  const content = `
+    <div style="line-height: 2;">
+      <p><strong>类型：</strong>${typeNames[record.recordType] || '其他'}</p>
+      <p><strong>标题：</strong>${record.title}</p>
+      <p><strong>内容：</strong>${record.content}</p>
+      <p><strong>记录日期：</strong>${formatDate(record.recordDate)}</p>
+      ${record.nextDate ? `<p><strong>下次提醒：</strong>${formatDate(record.nextDate)}</p>` : ''}
+    </div>
+  `
+  ElMessageBox.alert(content, '健康记录详情', {
+    dangerouslyUseHTMLString: true,
+    confirmButtonText: '关闭'
+  })
+}
+
 // 删除记录
 const handleDelete = async (record) => {
   try {
@@ -400,7 +486,12 @@ const handleDelete = async (record) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 如果是服务商，先检查审核状态
+  if (isProvider.value) {
+    await checkProviderStatus()
+  }
+  // 加载宠物列表
   loadPets()
 })
 </script>
@@ -409,6 +500,15 @@ onMounted(() => {
 .health-records-page {
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.provider-notice {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  margin-top: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  text-align: center;
 }
 
 .page-header {
@@ -464,7 +564,7 @@ onMounted(() => {
 // 记录卡片网格
 .records-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   min-height: 200px;
 }
@@ -473,6 +573,7 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   padding: 20px;
+  padding-right: 50px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   position: relative;
@@ -554,11 +655,18 @@ onMounted(() => {
 .record-actions {
   position: absolute;
   top: 12px;
-  right: 12px;
+  right: 8px;
   opacity: 0;
   transition: opacity 0.2s;
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 4px;
+
+  .el-button {
+    margin: 0 !important;
+    padding: 4px !important;
+  }
 }
 
 .empty-state {
@@ -581,7 +689,17 @@ onMounted(() => {
 }
 
 // 响应式
-@media (max-width: 600px) {
+@media (max-width: 1200px) {
+  .records-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .records-grid {
+    grid-template-columns: 1fr;
+  }
+  
   .pet-selector {
     flex-direction: column;
     align-items: stretch;
@@ -589,10 +707,6 @@ onMounted(() => {
     .el-select {
       width: 100% !important;
     }
-  }
-
-  .records-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

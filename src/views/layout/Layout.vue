@@ -26,7 +26,7 @@
           <el-icon><Picture /></el-icon>
           <template #title>宠物相册</template>
         </el-menu-item>
-        <el-menu-item v-if="canSeePets" index="/health-records">
+        <el-menu-item index="/health-records">
           <el-icon><Tickets /></el-icon>
           <template #title>健康记录</template>
         </el-menu-item>
