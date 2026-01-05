@@ -1,7 +1,10 @@
 package com.zk.petclinic.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.HealthRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author 张恺
@@ -10,4 +13,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface HealthRecordService extends IService<HealthRecord> {
 
+    Page<HealthRecord> pageRecord(long pageNo, long pageSize,long petId);
+
+    boolean createRecord(HealthRecord healthRecord,long petId);
+
+    boolean updateRecord(HealthRecord healthRecord, long id);
+
+    boolean deleteRecord(List<Long> ids);
+
+    List<HealthRecord> listRecord();
 }
