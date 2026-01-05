@@ -47,7 +47,8 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
     }
 
     @Override
-    public boolean updatePet(Pet pet) {
+    public boolean updatePet(Pet pet,long id) {
+        pet.setId(id);
         pet.setUpdateTime(new Date());
         return this.updateById(pet);
     }

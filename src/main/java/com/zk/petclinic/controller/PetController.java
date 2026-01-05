@@ -53,8 +53,7 @@ public class PetController {
 
     @PutMapping("/{id}")
     public ResultUtil<String> update(@RequestBody Pet pet, @PathVariable long id) {
-        pet.setId(id);
-        boolean updated = petService.updatePet(pet);
+        boolean updated = petService.updatePet(pet,id);
         return updated ? ResultUtil.success("更新成功") : ResultUtil.fail("更新失败");
     }
 

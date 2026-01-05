@@ -38,7 +38,7 @@ public interface PetService extends IService<Pet> {
     /**
      * 更新宠物
      */
-    boolean updatePet(Pet pet);
+    boolean updatePet(Pet pet,long id);
 
     /**
      * 批量删除宠物，返回不存在的宠物ID，如果全部存在则返回null
