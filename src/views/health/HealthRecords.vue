@@ -570,6 +570,7 @@ onMounted(async () => {
 }
 
 .record-card {
+  min-height: 200px;
   background: white;
   border-radius: 12px;
   padding: 20px;

@@ -33,6 +33,12 @@ const routes = [
         meta: { title: '健康记录', roles: [1, 2, 3] }  // 所有角色可访问
       },
       {
+        path: 'appointments',
+        name: 'appointments',
+        component: () => import('@/views/appointment/Appointments.vue'),
+        meta: { title: '预约管理', roles: [1, 2, 3] }  // 所有角色可访问
+      },
+      {
         path: 'chat',
         name: 'aiChat',
         component: () => import('@/views/chat/AIChat.vue'),

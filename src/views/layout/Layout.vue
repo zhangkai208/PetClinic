@@ -30,6 +30,10 @@
           <el-icon><Tickets /></el-icon>
           <template #title>健康记录</template>
         </el-menu-item>
+        <el-menu-item index="/appointments">
+          <el-icon><Calendar /></el-icon>
+          <template #title>预约管理</template>
+        </el-menu-item>
         <el-menu-item index="/chat">
           <el-icon><ChatDotRound /></el-icon>
           <template #title>AI助手</template>
@@ -112,7 +116,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets, Calendar 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'
@@ -390,7 +394,7 @@ const handleCommand = async (command) => {
 .content {
   flex: 1;
   padding: 20px 24px;
-  overflow-y: auto;
+  overflow-y: scroll;  // 始终显示滚动条，避免内容增减时布局跳动
 }
 
 // 过渡动画
