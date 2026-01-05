@@ -26,6 +26,10 @@
           <el-icon><Picture /></el-icon>
           <template #title>宠物相册</template>
         </el-menu-item>
+        <el-menu-item v-if="canSeePets" index="/health-records">
+          <el-icon><Tickets /></el-icon>
+          <template #title>健康记录</template>
+        </el-menu-item>
         <el-menu-item index="/chat">
           <el-icon><ChatDotRound /></el-icon>
           <template #title>AI助手</template>
@@ -108,7 +112,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'

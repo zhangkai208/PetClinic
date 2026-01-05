@@ -27,6 +27,12 @@ const routes = [
         meta: { title: '宠物相册', roles: [1, 3] }  // 仅宠物主人(1)和管理员(3)
       },
       {
+        path: 'health-records',
+        name: 'healthRecords',
+        component: () => import('@/views/health/HealthRecords.vue'),
+        meta: { title: '健康记录', roles: [1, 2, 3] }  // 所有角色可访问
+      },
+      {
         path: 'chat',
         name: 'aiChat',
         component: () => import('@/views/chat/AIChat.vue'),
@@ -95,7 +101,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 处理根路径的重定向（根据角色选择首页）
-  if (to.path === '/' || to.path === '/pets') {
+  if (to.path === '/') {
     if (userRole === 2) {
       // 服务商默认进入服务商管理页面
       next('/service-providers')
