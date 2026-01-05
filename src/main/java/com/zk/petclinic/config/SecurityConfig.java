@@ -68,8 +68,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/sysUser").hasRole("ADMIN")
                 
                 // ========== 3. 宠物模块 ==========
-                // 查看全部宠物列表（仅ADMIN）
-                .requestMatchers(HttpMethod.GET, "/pet/list").hasRole("ADMIN")
+                // 查看全部宠物列表（服务商和管理员可查看）
+                .requestMatchers(HttpMethod.GET, "/pet/list").hasAnyRole("PROVIDER", "ADMIN")
                 // 其他宠物管理接口（宠物主人OWNER和管理员ADMIN可访问）
                 .requestMatchers("/pet/**").hasAnyRole("OWNER", "ADMIN")
                 
