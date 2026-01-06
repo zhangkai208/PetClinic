@@ -18,6 +18,10 @@
         active-text-color="#fff"
         router
       >
+      <el-menu-item v-if="isAdmin" index="/admin/dashboard">
+          <el-icon><DataLine /></el-icon>
+          <template #title>数据看板</template>
+        </el-menu-item>
         <el-menu-item v-if="canSeePets" index="/pets">
           <el-icon><HomeFilled /></el-icon>
           <template #title>宠物宝贝</template>
@@ -116,7 +120,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets, Calendar 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets, Calendar, DataLine 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'

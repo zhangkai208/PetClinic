@@ -221,7 +221,15 @@ const handleLogin = async () => {
       avatar: res.data.avatar
     })
     ElMessage.success('登录成功')
-    router.push('/pets')
+    // 根据角色跳转到不同页面
+    const roleType = res.data.roleType
+    if (roleType === 3) {
+      router.push('/admin/dashboard')  // 管理员进入数据看板
+    } else if (roleType === 2) {
+      router.push('/service-providers')  // 服务商进入服务商管理
+    } else {
+      router.push('/pets')  // 宠物主人进入宠物列表
+    }
   } catch (error) {
     console.error('登录失败:', error)
   } finally {

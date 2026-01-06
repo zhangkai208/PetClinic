@@ -15,6 +15,12 @@ const routes = [
     redirect: '/pets',
     children: [
       {
+        path: 'admin/dashboard',
+        name: 'adminDashboard',
+        component: () => import('@/views/admin/Dashboard.vue'),
+        meta: { title: '数据看板', roles: [3] }  // 仅管理员(3)
+      },
+      {
         path: 'pets',
         name: 'pets',
         component: () => import('@/views/pet/Pets.vue'),
@@ -97,8 +103,8 @@ router.beforeEach((to, from, next) => {
         // 服务商重定向到服务商管理
         next('/service-providers')
       } else if (userRole === 3) {
-        // 管理员重定向到用户管理
-        next('/admin/users')
+        // 管理员重定向到数据看板
+        next('/admin/dashboard')
       } else {
         next('/profile')
       }
@@ -113,8 +119,8 @@ router.beforeEach((to, from, next) => {
       next('/service-providers')
       return
     } else if (userRole === 3) {
-      // 管理员默认进入用户管理页面
-      next('/admin/users')
+      // 管理员默认进入数据看板
+      next('/admin/dashboard')
       return
     }
   }
