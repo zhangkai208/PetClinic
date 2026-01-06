@@ -1,118 +1,173 @@
+# PetClinic-UI 前端
+
 ## 一、项目简介
 
 - **项目名称**：PetClinic-UI（宠物健康管理与服务预约系统前端）
-- **技术栈**：Vite、Vue 3、Vue Router、Pinia、Axios、Element Plus、ECharts（计划）、dayjs、nprogress
-- **目标角色**：宠物主人、服务商、管理员三种角色，分别对应不同的功能入口与权限。
+- **技术栈**：Vite 7.x、Vue 3.5、Vue Router 4、Pinia、Axios、Element Plus、ECharts、Sass
+- **目标角色**：宠物主人(OWNER)、服务商(PROVIDER)、管理员(ADMIN) 三种角色，分别对应不同的功能入口与权限。
 
 ---
 
-## 二、当前进度概述
+## 二、项目结构
 
-- 已完成：项目脚手架初始化（Vite + Vue 3）；Axios 基础封装（`src/utils/request.js`）。
-- 待完成：路由/状态管理/组件库搭建、各业务页面实现、前后端联调、打包部署、论文截图素材收集。
-
----
-
-## 三、目录与分层规划
-
-| 目录 | 说明 |
-| --- | --- |
-| `src/api/` | 按模块封装请求：`auth.js`、`user.js`、`pet.js`、`health.js`、`provider.js`、`appointment.js`、`admin.js` |
-| `src/stores/` | Pinia 仓库：`userStore`、`petStore`、`appointmentStore`、`notificationStore` 等 |
-| `src/layouts/` | 全局布局：`BaseLayout.vue`（侧边栏+顶部+内容）、`AuthLayout.vue`（登录/注册） |
-| `src/router/` | 路由与守卫：定义角色所需的菜单、路由、重定向策略 |
-| `src/views/` | 各业务页面（见下方模块拆解） |
-| `src/components/` | 通用组件（表单、表格、状态 Tag、上传组件、空状态等） |
-
----
-
-## 四、模块级待办（与后端 8 大模块一一对应）
-
-### 1. 用户与权限管理
-- **页面**：`Login.vue`、`Register.vue`、`Profile.vue`、`ChangePassword.vue`
-- **交互**：
-  - 登录成功后写入 Pinia + LocalStorage，按角色跳转首页。
-  - 注册时支持上传头像、填写基础资料。
-  - 个人中心可修改昵称、联系方式、头像。
-- **技术点**：路由守卫、Token 续期、401 全局拦截、角色菜单控制。
-
-### 2. 宠物档案管理
-- **页面**：`PetList.vue`、`PetForm.vue`、`PetDetail.vue`
-- **功能**：
-  - 列表支持搜索、排序、分页。
-  - 头像上传可采用 Element Plus `Upload` 组件 + OSS/本地接口。
-  - 详情页展示宠物基础信息 + 最近健康记录。
-
-### 3. 健康记录与追踪
-- **页面**：`HealthRecordList.vue`、`HealthRecordForm.vue`
-- **功能**：
-  - 以时间线/卡片形式展示疫苗、驱虫、用药、日常记录。
-  - 支持按记录类型、时间范围筛选。
-  - 高亮即将到期的提醒事项，接口联动“提醒与消息”模块。
-
-### 4. 服务商与服务展示
-- **页面**：`ProviderList.vue`、`ProviderDetail.vue`、`ProviderApply.vue`
-- **功能**：
-  - 列表按类型（医院/美容/寄养/训练）筛选，支持地图或地址展示（可选）。
-  - 详情展示服务项目、价格、预约情况、评价。
-  - 服务商入驻申请表单带上传资质证书、联系信息等。
-
-### 5. 预约与订单管理
-- **页面**：`AppointmentCreate.vue`、`AppointmentList.vue`、`AppointmentCalendar.vue`
-- **功能**：
-  - 创建预约流程化：选择宠物 → 选择服务商/服务 → 选择时间 → 填写备注。
-  - 列表按状态（待确认、已预约、已完成、已取消）分组，提供操作按钮。
-  - 日历视图展示服务商的排期，便于选择空闲时间段。
-
-### 6. 提醒与消息
-- **页面**：`NotificationList.vue`、顶部消息组件
-- **功能**：
-  - 展示系统消息、预约提醒、健康提醒。
-  - 未读标记、批量已读、清空等交互。
-  - 后续可接入 WebSocket/轮询保持实时性。
-
-### 7. 支付与财务（可模拟）
-- **页面**：`PaymentResult.vue`、`OrderList.vue`
-- **功能**：
-  - 模拟支付流程：提交订单 → 支付成功/失败页面。
-  - 展示历史订单金额、支付状态，供服务商/管理员查看。
-
-### 8. 后台管理（管理员视角）
-- **页面**：`AdminDashboard.vue`、`AdminUserManage.vue`、`AdminProviderAudit.vue`、`AdminAnnouncement.vue`
-- **功能**：
-  - 统计看板（用户数、服务商数、预约数、收入等），使用 ECharts 绘制。
-  - 用户管理：禁用/启用、角色切换。
-  - 服务商审核：列表 + 审核通过/驳回弹窗。
-  - 公告管理：富文本编辑器发布系统公告。
+```
+PetClinic-UI/src/
+├── main.js                 # 应用入口
+├── App.vue                 # 根组件
+├── api/                    # API接口封装
+│   ├── sysuser.js          # 用户相关接口
+│   ├── pet.js              # 宠物相关接口
+│   ├── healthRecord.js     # 健康记录接口
+│   ├── appointment.js      # 预约接口
+│   ├── serviceProvider.js  # 服务商接口
+│   ├── dashboard.js        # 数据看板接口
+│   └── chat.js             # AI对话接口
+├── stores/                 # Pinia状态管理
+│   ├── token.js            # Token存储
+│   └── userinfo.js         # 用户信息存储
+├── router/                 # 路由配置
+│   └── index.js            # 路由定义与守卫
+├── utils/                  # 工具类
+│   └── request.js          # Axios封装
+└── views/                  # 页面组件
+    ├── Login.vue           # 登录/注册页
+    ├── Profile.vue         # 个人中心
+    ├── layout/
+    │   └── Layout.vue      # 全局布局（侧边栏+顶部+内容区）
+    ├── admin/
+    │   ├── Dashboard.vue   # 数据看板 (管理员)
+    │   └── Users.vue       # 用户管理 (管理员)
+    ├── pet/
+    │   ├── Pets.vue        # 宠物列表
+    │   └── PetGallery.vue  # 宠物相册
+    ├── health/
+    │   └── HealthRecords.vue  # 健康记录
+    ├── appointment/
+    │   └── Appointments.vue   # 预约管理
+    ├── service/
+    │   └── ServiceProviders.vue  # 服务商管理
+    └── chat/
+        └── AIChat.vue      # AI智能助手
+```
 
 ---
 
-## 五、里程碑式开发节奏
+## 三、当前完成进度
 
-| 周次 | 目标 | 前端交付 |
-| --- | --- | --- |
-| Week1 | 基建搭建 | 引入 Element Plus、Pinia、全局布局、路由守卫、登录/注册 UI |
-| Week2 | 用户 + 宠物 | 完成用户中心、宠物列表/表单/详情、与后端初次联调 |
-| Week3 | 健康 + 服务商 | 完成健康记录页面、服务商列表/详情/申请 |
-| Week4 | 预约 + 消息 | 搭建预约流程、预约日历、消息提醒模块 |
-| Week5 | 后台 + 可视化 | 实现管理员看板、用户/服务商管理、ECharts 数据展示 |
-| Week6 | 联调 + 优化 | 全量联调、UI 细节打磨、打包部署脚本、论文截图收集 |
+### ✅ 已完成功能
+
+| 模块 | 页面 | 状态 | 说明 |
+|------|------|------|------|
+| 用户认证 | Login.vue | ✅ 完成 | 登录/注册二合一，支持表单验证 |
+| 个人中心 | Profile.vue | ✅ 完成 | 查看/修改个人信息、头像上传 |
+| 全局布局 | Layout.vue | ✅ 完成 | 响应式侧边栏、面包屑、角色菜单控制 |
+| 宠物管理 | Pets.vue | ✅ 完成 | 列表、搜索、筛选、CRUD、头像上传 |
+| 宠物相册 | PetGallery.vue | ✅ 完成 | 宠物照片管理、画廊展示 |
+| 健康记录 | HealthRecords.vue | ✅ 完成 | 疫苗/驱虫/用药/笔记记录管理 |
+| 预约管理 | Appointments.vue | ✅ 完成 | 预约列表、状态管理 |
+| 服务商管理 | ServiceProviders.vue | ✅ 完成 | 服务商列表、申请入驻、审核 |
+| 数据看板 | Dashboard.vue | ✅ 完成 | ECharts图表、统计卡片 |
+| 用户管理 | Users.vue | ✅ 完成 | 用户CRUD、角色管理(管理员) |
+| AI助手 | AIChat.vue | ✅ 完成 | 流式对话、会话管理 |
+
+### 🔐 权限控制
+
+| 角色 | 可访问页面 |
+|------|------------|
+| 宠物主人 (1) | 宠物管理、宠物相册、健康记录、预约管理、AI助手、个人中心 |
+| 服务商 (2) | 服务商管理、健康记录、预约管理、AI助手、个人中心 |
+| 管理员 (3) | **数据看板**、用户管理、服务商管理、健康记录、预约管理、AI助手、个人中心 |
 
 ---
 
-## 六、工程与质量保障
+## 四、路由配置
 
-- **规范**：配置 ESLint + Prettier；统一组件命名和目录命名；在 Git 提交信息中注明模块。
-- **环境**：`.env.development`、`.env.production` 管理 API 地址；通过 `VITE_APP_BASE_API` 注入 Axios。
-- **测试**：使用 Vitest + @vue/test-utils 对核心组件做烟雾测试；编写关键页面的 e2e 用例（可选）。
-- **性能**：启用路由懒加载、组件按需引入；对大表格使用虚拟滚动（可选）。
+```javascript
+// 主要路由结构
+/login              → 登录页 (公开)
+/                   → Layout布局
+  /admin/dashboard  → 数据看板 (ADMIN)
+  /admin/users      → 用户管理 (ADMIN)
+  /pets             → 宠物列表 (OWNER, ADMIN)
+  /gallery          → 宠物相册 (OWNER, ADMIN)
+  /health-records   → 健康记录 (ALL)
+  /appointments     → 预约管理 (ALL)
+  /service-providers→ 服务商管理 (PROVIDER, ADMIN)
+  /chat             → AI助手 (ALL)
+  /profile          → 个人中心 (ALL)
+```
+
+**登录后默认跳转**：
+- 管理员 → `/admin/dashboard`
+- 服务商 → `/service-providers`
+- 宠物主人 → `/pets`
 
 ---
 
-## 七、联调与论文素材采集
+## 五、技术特性
 
-- 每完成一个模块：
-  1. 与后端接口联调，使用 Apifox/Postman 记录接口示例。
-  2. 截取关键页面截图（列表、表单、统计图），放入 `docs/screenshots/`。
-  3. 在 README 中追加开发日志，记录日期、完成内容、问题总结。
-- 最终输出包括：系统架构图、前端路由图、主要页面截图、性能指标表等，直接用于论文章节。*** End Patch
+### 状态管理
+- 使用 **Pinia** 管理 Token 和用户信息
+- 使用 **pinia-persistedstate-plugin** 实现状态持久化
+
+### 请求封装
+- 基于 Axios 封装请求拦截器（自动携带 Token）
+- 响应拦截器处理 401 未授权自动跳转登录
+
+### UI组件
+- 使用 **Element Plus** 组件库
+- 图标使用 **@element-plus/icons-vue**
+
+### 数据可视化
+- 使用 **ECharts** 绑制数据看板图表
+- 支持饼图、柱状图等可视化展示
+
+---
+
+## 六、启动方式
+
+```bash
+# 安装依赖
+npm install
+
+# 开发环境运行
+npm run dev
+
+# 生产环境打包
+npm run build
+```
+
+**默认端口**：`http://localhost:5173`
+
+---
+
+## 七、环境配置
+
+项目通过 Vite 环境变量管理 API 地址：
+
+| 文件 | 说明 |
+|------|------|
+| `.env.development` | 开发环境配置 |
+| `.env.production` | 生产环境配置 |
+
+在 `src/utils/request.js` 中使用：
+```javascript
+baseURL: import.meta.env.VITE_APP_BASE_API || 'http://localhost:8080/api'
+```
+
+---
+
+## 八、开发规范
+
+- **命名规范**：组件使用 PascalCase，文件夹使用 kebab-case
+- **样式**：使用 SCSS，组件内样式使用 `scoped`
+- **提交规范**：feat(模块): 功能描述 / fix(模块): 修复描述
+
+---
+
+## 九、论文素材
+
+每完成一个模块：
+1. 截取关键页面截图，放入 `docs/screenshots/`
+2. 记录接口联调日志
+3. 输出包括：系统架构图、前端路由图、主要页面截图等
