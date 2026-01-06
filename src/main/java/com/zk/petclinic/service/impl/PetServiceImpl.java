@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
 * @author 张恺
@@ -96,6 +98,27 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
             }
         }
         return urls;
+    }
+
+    @Override
+    public List<Map<String, Object>> getPetTypeDistribution() {
+        // 获取所有宠物按类型分组统计
+        List<Pet> allPets = this.list();
+        Map<String, Long> typeCount = new HashMap<>();
+        
+        for (Pet pet : allPets) {
+            String type = pet.getType() != null ? pet.getType() : "未知";
+            typeCount.put(type, typeCount.getOrDefault(type, 0L) + 1);
+        }
+        
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : typeCount.entrySet()) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("name", entry.getKey());
+            item.put("value", entry.getValue());
+            result.add(item);
+        }
+        return result;
     }
 
 }

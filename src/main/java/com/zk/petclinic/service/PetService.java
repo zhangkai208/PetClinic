@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author 张恺
@@ -61,4 +62,10 @@ public interface PetService extends IService<Pet> {
      * @return 上传成功的图片URL列表
      */
     List<String> uploadPhotos(MultipartFile[] files) throws IOException;
+
+    /**
+     * 获取宠物类型分布统计
+     * @return 类型名称和数量的列表
+     */
+    List<Map<String, Object>> getPetTypeDistribution();
 }

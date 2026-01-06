@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author 张恺
@@ -59,4 +61,10 @@ public interface SysUserService extends IService<SysUser> {
      * 上传头像
      */
     String uploadAvatar(MultipartFile file) throws IOException;
+
+    /**
+     * 获取用户角色分布统计
+     * @return 角色名称和数量的列表
+     */
+    List<Map<String, Object>> getUserRoleDistribution();
 }

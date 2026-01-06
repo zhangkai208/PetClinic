@@ -17,6 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
 * @author 张恺
@@ -130,5 +134,31 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
         assert originalFilename != null;
         final String fileName = UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
         return QiniuOssUtil.uploadFile(fileName, file.getInputStream());
+    }
+
+    @Override
+    public List<Map<String, Object>> getUserRoleDistribution() {
+        List<SysUser> allUsers = this.list();
+        Map<Integer, Long> roleCount = new HashMap<>();
+        
+        for (SysUser user : allUsers) {
+            Integer roleType = user.getRoleType() != null ? user.getRoleType() : 0;
+            roleCount.put(roleType, roleCount.getOrDefault(roleType, 0L) + 1);
+        }
+        
+        // 角色名称映射
+        Map<Integer, String> roleNames = new HashMap<>();
+        roleNames.put(1, "宠物主人");
+        roleNames.put(2, "服务商");
+        roleNames.put(3, "管理员");
+        
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<Integer, Long> entry : roleCount.entrySet()) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("name", roleNames.getOrDefault(entry.getKey(), "未知"));
+            item.put("value", entry.getValue());
+            result.add(item);
+        }
+        return result;
     }
 }

@@ -5,6 +5,7 @@ import com.zk.petclinic.domain.Appointment;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author 张恺
@@ -20,4 +21,11 @@ public interface AppointmentService extends IService<Appointment> {
     boolean updateAppointment(Appointment appointment, long id);
 
     boolean deleteAppointment(List<Long> ids);
+
+    /**
+     * 获取近N天的预约趋势统计
+     * @param days 天数
+     * @return 日期和预约数量的列表
+     */
+    List<Map<String, Object>> getAppointmentTrend(int days);
 }

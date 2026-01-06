@@ -15,6 +15,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 /**
 * @author 张恺
@@ -58,6 +63,41 @@ public class AppointmentServiceImpl extends ServiceImpl<AppointmentMapper, Appoi
     @Override
     public boolean deleteAppointment(List<Long> ids) {
         return this.removeByIds(ids);
+    }
+
+    @Override
+    public List<Map<String, Object>> getAppointmentTrend(int days) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        
+        // 获取所有预约
+        List<Appointment> allAppointments = this.list();
+        
+        // 统计每一天的预约数量
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = days - 1; i >= 0; i--) {
+            Calendar dayStart = Calendar.getInstance();
+            dayStart.add(Calendar.DAY_OF_MONTH, -i);
+            dayStart.set(Calendar.HOUR_OF_DAY, 0);
+            dayStart.set(Calendar.MINUTE, 0);
+            dayStart.set(Calendar.SECOND, 0);
+            dayStart.set(Calendar.MILLISECOND, 0);
+            
+            Calendar dayEnd = (Calendar) dayStart.clone();
+            dayEnd.add(Calendar.DAY_OF_MONTH, 1);
+            
+            long count = allAppointments.stream()
+                .filter(a -> a.getCreateTime() != null)
+                .filter(a -> !a.getCreateTime().before(dayStart.getTime()) 
+                          && a.getCreateTime().before(dayEnd.getTime()))
+                .count();
+            
+            Map<String, Object> item = new HashMap<>();
+            item.put("date", sdf.format(dayStart.getTime()));
+            item.put("count", count);
+            result.add(item);
+        }
+        return result;
     }
 }
 
