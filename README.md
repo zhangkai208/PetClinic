@@ -1,177 +1,324 @@
-## 一、项目简介（后端）
+# PetClinic 后端
+
+## 一、项目简介
 
 - **项目名称**：基于 Spring Boot 的宠物健康管理与服务预约系统（后端）
-- **技术栈**：Spring Boot、Spring MVC、Spring Security + JWT、MyBatis-Plus、MySQL、Redis、ECache、Lombok、JUnit
-- **整体目标**：围绕任务书中的 8 个核心模块（用户与权限、宠物档案、健康记录、预约、服务商与订单、提醒消息、支付结算、后台管理），提供稳定的 RESTful API，为 Vue 前端和后续论文撰写提供支撑。
-
-## 二、当前进度概述
-
-- **基础结构**：
-  - `PetClinicApplication` 可正常启动。
-  - 已集成 MyBatis-Plus（`MybatisPlusConfig`）、Redis（`RedisConfig`）、统一返回封装 `Result`。
-- **领域模型**：
-  - 已根据任务书/项目搭建文档创建核心实体：`SysUser`、`Pet`、`ServiceProvider`、`Appointment`、`HealthRecord`。
-  - 已生成对应 `Mapper` 接口、`Service` 接口及 `ServiceImpl`，实现了基础 CRUD 能力。
-- **缺失部分（需要补齐）**：
-  - 控制层 Controller、DTO/VO、统一异常处理和参数校验。
-  - 权限认证、安全配置（Spring Security + JWT）。
-  - 具体业务规则（预约冲突校验、入驻审核、提醒推送等）。
-  - 单元测试、接口文档、部署脚本和论文需要的图表资料。
+- **技术栈**：Spring Boot 3.x、Spring MVC、Spring Security + JWT、MyBatis-Plus、MySQL 8.0、Redis、Spring AI、七牛云OSS、Lombok
+- **整体目标**：围绕任务书中的核心模块，提供稳定的 RESTful API，为 Vue 前端和后续论文撰写提供支撑。
 
 ---
 
-## 三、按模块要做的事情（对应任务书 8 大模块）
+## 二、项目结构
 
-### 1. 用户与权限管理模块（SysUser）
-
-- **数据层**：
-  - 补充用户角色枚举（主人/服务商/管理员）、账号状态枚举，避免 Magic Number。
-  - 增加密码加密字段说明（BCrypt 等）和登录日志表（可选）。
-- **业务层**：
-  - 实现 `SysUserService` 中的注册、登录、修改资料、修改密码等业务方法。
-  - 编写用户查重逻辑（用户名/手机号/邮箱唯一），封装统一业务异常。
-- **控制层**：
-  - 创建 `SysUserController`：
-    - `POST /auth/register`：注册接口。
-    - `POST /auth/login`：登录获取 JWT。
-    - `GET /user/profile`：获取当前登录用户信息。
-    - `PUT /user/profile`：修改个人信息。
-- **安全与权限**：
-  - 集成 Spring Security + JWT：
-    - 登录签发 Token、解析 Token、刷新 Token。
-    - 按 `role_type` 控制不同接口访问权限。
-  - 整理一张“权限-接口映射表”，用于论文中说明 RBAC 设计。
-
-### 2. 宠物档案管理模块（Pet）
-
-- **数据与业务**：
-  - 完善宠物信息字段的校验规则（名称必填、体重范围、生日不能晚于当前日期等）。
-  - 设计宠物与主人（`owner_id`）的绑定逻辑，禁止越权访问他人宠物信息。
-  - 支持宠物头像上传（本地路径/OSS 占位实现），并在数据库中保存访问 URL。
-- **接口设计**（`PetController`）：
-  - `GET /pets`：按主人分页查询宠物列表，可筛选类型、品种。
-  - `GET /pets/{id}`：查看宠物详情。
-  - `POST /pets`：新增宠物档案。
-  - `PUT /pets/{id}`：修改宠物信息。
-  - `DELETE /pets/{id}`：删除/软删除宠物档案。
-- **论文素材**：
-  - 绘制“宠物档案管理”流程图（添加/修改/删除）。
-  - 统计接口 QPS 与响应时间，为性能章节准备数据。
-
-### 3. 健康记录与追踪模块（HealthRecord）
-
-- **业务规则**：
-  - 根据 `record_type` 区分疫苗、驱虫、用药、健康笔记，不同类型校验不同字段。
-  - 计算 `next_date`（下次提醒日期），为提醒模块提供数据。
-- **接口设计**（`HealthRecordController`）：
-  - `GET /health-records`：按宠物分页查询健康记录，可按类型、日期筛选。
-  - `POST /health-records`：新增记录。
-  - `PUT /health-records/{id}`：编辑记录。
-  - `DELETE /health-records/{id}`：删除记录。
-- **提醒对接**：
-  - 提供查询“即将到期的疫苗/驱虫记录”的接口，供定时任务或消息模块调用。
-
-### 4. 服务商与服务管理模块（ServiceProvider）
-
-- **入驻与审核**：
-  - `ServiceProviderService` 中实现服务商申请、资料修改、审核通过/驳回逻辑。
-  - 设计服务商状态流转：待审核 → 已通过 → 已拒绝/已冻结。
-- **接口设计**（`ServiceProviderController`）：
-  - 服务商申请、修改、查看详情、管理员审核接口。
-  - 服务商列表接口（支持按类型、地区、评分排序）。
-- **订单衔接**：
-  - 为后续订单/预约模块预留字段（服务项目、价格等，可先用简化版本）。
-
-### 5. 预约与订单模块（Appointment）
-
-- **预约规则**：
-  - 防止同一时间段重复预约同一服务商。
-  - 根据宠物、服务商状态判定是否允许预约。
-  - 维护预约状态机：待确认 → 已预约 → 已完成/已取消。
-- **接口设计**（`AppointmentController`）：
-  - 创建预约、取消预约、确认完成、查询预约列表（主人/服务商视角）、查看详情。
-  - 提供日历视图数据接口（按日期返回预约情况）。
-- **订单扩展（选做）**：
-  - 预留订单表、支付状态字段，为后续支付集成模块使用。
-
-### 6. 提醒与消息模块
-
-- **数据来源**：
-  - 基于 `HealthRecord.next_date`、`Appointment` 时间字段生成提醒任务。
-- **实现方案**：
-  - 使用 Spring 定时任务轮询，或使用消息队列（如果时间允许）实现异步提醒。
-  - 提供消息查询接口，供前端展示“我的消息”“系统公告”。
-
-### 7. 支付与财务管理模块（可简化为模拟）
-
-- **模拟支付流程**：
-  - 定义支付订单实体（金额、支付状态、支付时间等）。
-  - 提供“创建订单”“模拟支付成功”“查询订单”接口。
-- **结算与统计**：
-  - 统计服务商收入、订单数量，为后台看板提供数据。
-
-### 8. 系统后台管理模块
-
-- **管理员能力**：
-  - 用户管理：禁用/启用用户、重置密码等。
-  - 服务商管理：审核、上下线、查看统计。
-  - 内容管理：公告、健康知识库等。
-- **接口**：
-  - 提供角色为管理员时可访问的后台接口集合，统一使用 `/admin/**` 前缀，便于在 Security 中配置。
+```
+PetClinic/src/main/java/com/zk/petclinic/
+├── PetClinicApplication.java    # 启动类
+├── config/                      # 配置类
+│   ├── SecurityConfig.java      # Spring Security配置
+│   ├── MybatisPlusConfig.java   # MyBatis-Plus配置
+│   ├── RedisConfig.java         # Redis配置
+│   └── AIConfiguration.java     # Spring AI配置
+├── controller/                  # 控制器层
+│   ├── SysUserController.java   # 用户管理
+│   ├── PetController.java       # 宠物管理
+│   ├── HealthRecordController.java    # 健康记录
+│   ├── AppointmentController.java     # 预约管理
+│   ├── ServiceProviderController.java # 服务商管理
+│   ├── DashboardController.java       # 数据看板统计
+│   ├── ChatConversationController.java # AI对话会话
+│   └── ChatMessageController.java      # AI对话消息
+├── service/                     # 服务层
+│   ├── impl/                    # 服务实现
+│   └── ...Service.java          # 服务接口
+├── mapper/                      # MyBatis Mapper
+├── domain/                      # 实体类
+│   ├── SysUser.java
+│   ├── Pet.java
+│   ├── HealthRecord.java
+│   ├── Appointment.java
+│   ├── ServiceProvider.java
+│   ├── ChatConversation.java
+│   ├── ChatMessage.java
+│   └── dto/                     # 数据传输对象
+├── enums/                       # 枚举类
+│   ├── SysUserRoleType.java     # 用户角色枚举
+│   ├── Petgender.java           # 宠物性别枚举
+│   ├── ServiceProviderStatus.java  # 服务商状态枚举
+│   └── ServiceProviderType.java    # 服务商类型枚举
+├── exception/                   # 异常处理
+│   ├── GlobalExceptionHandler.java  # 全局异常处理器
+│   └── BusinessException.java       # 自定义业务异常
+├── security/                    # 安全相关
+│   └── JwtAuthenticationFilter.java # JWT过滤器
+├── interceptor/                 # 拦截器
+└── util/                        # 工具类
+    ├── JWTUtil.java
+    ├── RedisUtil.java
+    ├── ResultUtil.java          # 统一响应封装
+    ├── QiniuOssUtil.java        # 七牛云上传工具
+    └── ThreadLocalUtil.java
+```
 
 ---
 
-## 四、按时间推进的开发节奏（可直接放进论文“进度安排”）
+## 三、当前完成进度
 
-- **第 1 周**：补齐基础设施（异常处理、DTO/VO、日志、多环境配置）+ 用户注册登录 + JWT。
-- **第 2 周**：完成用户与权限管理、宠物档案模块接口，实现基本增删改查和权限控制。
-- **第 3 周**：完成健康记录模块 + 服务商入驻与审核模块，联调前端相关页面。
-- **第 4 周**：实现预约模块（含状态机）+ 简单服务评价接口，完善订单数据结构。
-- **第 5 周**：接入 Redis/ECache 缓存、优化查询性能，补充单元测试和接口文档。
-- **第 6 周**：整理部署脚本、完成系统联调与压力测试，输出所有论文所需的图表和截图。
+### ✅ 已完成模块
 
-> 要求：每完成一个模块，至少做三件事：**代码实现 + 接口文档 + 截图/图表**，方便后期直接写入毕业论文。*** End Patch
+| 模块 | 状态 | 说明 |
+|------|------|------|
+| 用户与权限管理 | ✅ 完成 | 注册、登录、JWT认证、多角色权限控制(OWNER/PROVIDER/ADMIN) |
+| 宠物档案管理 | ✅ 完成 | CRUD、头像/相册上传、按性别筛选 |
+| 健康记录管理 | ✅ 完成 | 疫苗/驱虫/用药/笔记记录，权限校验 |
+| 服务商管理 | ✅ 完成 | 入驻申请、审核、状态管理 |
+| 预约管理 | ✅ 完成 | 创建/取消预约、状态管理 |
+| 管理员看板 | ✅ 完成 | 统计卡片、趋势图表、分布图表 |
+| AI智能助手 | ✅ 完成 | 基于Spring AI，支持流式对话 |
+| 全局异常处理 | ✅ 完成 | 多类型异常精细化处理 |
 
-完整实现步骤总结
+### ⏳ 待完善模块
 
-确认问题原因
-测试域名（如 xxx.bkt.clouddn.com）超过30天自动回收或流量超限，导致外链失效。
-决定使用自定义域名
-选择已备案域名 zhangkairedzack.top（你买的 .top 域名）。
-在七牛云绑定自定义域名
-登录七牛控制台 → 对象存储 → 域名管理
-添加域名 zhangkairedzack.top
-触发域名所有权验证（需要添加 TXT 记录）
+| 模块 | 状态 | 说明 |
+|------|------|------|
+| 提醒与消息 | ⏳ 待开发 | 疫苗/驱虫到期提醒推送 |
+| 支付与财务 | ⏳ 可选 | 模拟支付流程 |
 
-发现 DNS 托管在 Cloudflare
-原来域名 NS 已指向 Cloudflare（nick.ns.cloudflare.com 和 daphne.ns.cloudflare.com）
-因此所有 DNS 操作必须在 Cloudflare 完成，阿里云解析无效
+---
 
-完成域名所有权验证（TXT 记录）
-从七牛验证页面复制最新 TXT 值（verify_ 开头的长字符串）
-登录 Cloudflare → 选择域名 → DNS → Records
-添加记录：
-Type: TXT
-Name: verification
-Content: 七牛给的完整验证串
-Proxy status: DNS only（灰云）
-保存 → 等待 1~5 分钟 → 回七牛点击“点此验证” → 通过（绿勾）
+## 四、核心接口清单
 
-配置 CNAME 记录（核心步骤）
-在七牛“如何配置 CNAME”页面获取 CNAME 值（zhangkairedzack-top-idvqy1m.qiniudns.com）
-回到 Cloudflare DNS → 添加记录：
-Type: CNAME
-Name: @（使用主域名 zhangkairedzack.top）
-Target: zhangkairedzack-top-idvqy1m.qiniudns.com
-Proxy status: DNS only（灰云，必须！）
-TTL: Auto
-保存 → 等待 5~15 分钟生效
+### 1. 用户模块 `/sysUser`
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| POST | `/sysUser/register` | 用户注册 | 公开 |
+| POST | `/sysUser/login` | 用户登录 | 公开 |
+| POST | `/sysUser/logout` | 退出登录 | 已登录 |
+| GET | `/sysUser/{id}` | 获取用户信息 | 已登录 |
+| PUT | `/sysUser/{id}` | 更新用户信息 | 已登录 |
+| GET | `/sysUser/page` | 分页查询用户 | ADMIN |
+| POST | `/sysUser/upload` | 上传头像 | 已登录 |
 
-七牛侧设置外链默认域名
-去空间（pet-clinic） → 文件管理
-右上角“外链默认域名”下拉选择 zhangkairedzack.top → 保存
+### 2. 宠物模块 `/pet`
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/pet/page` | 分页查询我的宠物 | OWNER/ADMIN |
+| GET | `/pet/list` | 获取所有宠物 | PROVIDER/ADMIN |
+| POST | `/pet/create` | 新增宠物 | OWNER/ADMIN |
+| PUT | `/pet/{id}` | 更新宠物 | OWNER/ADMIN |
+| DELETE | `/pet/{id}` | 删除宠物 | OWNER/ADMIN |
+| POST | `/pet/upload` | 上传宠物头像 | OWNER/ADMIN |
+| POST | `/pet/uploadPhotos` | 上传相册照片 | OWNER/ADMIN |
+| GET | `/pet/gender/{gender}` | 按性别筛选 | OWNER/ADMIN |
 
-验证成功
-直接浏览器访问 http://zhangkairedzack.top/001.png → 图片正常显示
-七牛控制台文件列表外链也变成你的自定义域名
-（状态显示“未配置”是七牛后台缓存延迟，不影响实际使用，后续会自动变绿）
+### 3. 健康记录模块 `/healthRecord`
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/healthRecord/page` | 分页查询健康记录 | OWNER/PROVIDER/ADMIN |
+| POST | `/healthRecord/create` | 新增健康记录 | PROVIDER/ADMIN |
+| PUT | `/healthRecord/{id}` | 更新健康记录 | PROVIDER/ADMIN |
+| DELETE | `/healthRecord/delete` | 批量删除记录 | PROVIDER/ADMIN |
+
+### 4. 预约模块 `/appointment`
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/appointment/page` | 分页查询预约 | OWNER/PROVIDER/ADMIN |
+| POST | `/appointment/create` | 创建预约 | OWNER/PROVIDER/ADMIN |
+| PUT | `/appointment/{id}` | 更新预约状态 | OWNER/PROVIDER/ADMIN |
+| DELETE | `/appointment/delete` | 删除预约 | OWNER/PROVIDER/ADMIN |
+
+### 5. 服务商模块 `/serviceProviders`
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/serviceProviders/page` | 分页查询服务商 | OWNER/PROVIDER/ADMIN |
+| GET | `/serviceProviders/list` | 服务商列表 | OWNER/PROVIDER/ADMIN |
+| POST | `/serviceProviders/create` | 申请入驻 | PROVIDER/ADMIN |
+| PUT | `/serviceProviders/{id}` | 更新服务商信息 | PROVIDER/ADMIN |
+
+### 6. 管理员看板 `/admin/dashboard`
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/admin/dashboard/stats` | 获取统计数据 | ADMIN |
+| GET | `/admin/dashboard/pet-type-distribution` | 宠物类型分布 | ADMIN |
+| GET | `/admin/dashboard/appointment-trend` | 预约趋势 | ADMIN |
+| GET | `/admin/dashboard/user-role-distribution` | 用户角色分布 | ADMIN |
+
+### 7. AI对话模块
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/ChatConversation/list` | 获取对话列表 | 已登录 |
+| POST | `/ChatConversation/create` | 创建对话 | 已登录 |
+| GET | `/chatMessage/stream` | 流式AI对话 | 已登录 |
+
+---
+
+## 五、权限角色说明
+
+| 角色 | roleType | 权限范围 |
+|------|----------|----------|
+| 宠物主人 | 1 (OWNER) | 管理自己的宠物、查看健康记录、创建预约 |
+| 服务商 | 2 (PROVIDER) | 查看所有宠物、管理健康记录、处理预约、管理服务商信息 |
+| 管理员 | 3 (ADMIN) | 全平台管理权限、数据看板、用户管理 |
+
+---
+
+## 六、启动方式
+
+```bash
+# 1. 确保 MySQL 和 Redis 已启动
+# 2. 修改 application.yml 中的数据库配置
+# 3. 运行项目
+mvn spring-boot:run
+
+# 或使用 IDE 直接运行 PetClinicApplication.java
+```
+
+---
+
+## 附录：七牛云OSS配置
+
+项目使用七牛云对象存储保存图片文件（宠物头像、相册等）。
+
+**配置步骤**：
+1. 在七牛云创建存储空间（Bucket）
+2. 绑定自定义域名并完成DNS验证（CNAME记录）
+3. 在 `QiniuOssUtil.java` 中配置 AccessKey、SecretKey 和域名
+4. 确保域名在 Cloudflare 等DNS服务商设置为 DNS Only 模式
+
+> 详细步骤：控制台 → 对象存储 → 域名管理 → 添加域名 → 配置CNAME → 设置外链默认域名
+
+---
+
+## 七、宝塔面板部署指南
+
+### 1. 服务器环境准备
+
+在宝塔面板安装以下软件：
+- **Nginx** 1.22+
+- **MySQL** 8.0+
+- **Java项目一键部署** 插件（软件商店搜索）
+- **Redis**（可选，如果使用缓存）
+
+### 2. 数据库配置
+
+1. 宝塔 → **数据库** → **添加数据库**
+2. 数据库名：`petclinic`
+3. 用户名/密码：自定义
+4. 导入 `petclinic.sql` 文件
+
+### 3. 后端部署
+
+#### 3.1 修改配置文件
+
+修改 `src/main/resources/application.yml`：
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/petclinic?useSSL=false&serverTimezone=Asia/Shanghai
+    username: 你的数据库用户名
+    password: 你的数据库密码
+```
+
+#### 3.2 打包项目
+
+```bash
+mvn clean package -DskipTests
+```
+
+生成的 jar 包在 `target/` 目录下。
+
+#### 3.3 宝塔部署 Java 项目
+
+1. 宝塔 → **网站** → **Java项目** → **添加Java项目**
+2. 项目路径：上传 jar 包的目录
+3. 项目端口：`8080`
+4. 启动后查看日志确认：`Started PetClinicApplication`
+
+### 4. 前端部署
+
+#### 4.1 打包前端
+
+```bash
+cd PetClinic-UI
+npm run build
+```
+
+#### 4.2 上传 dist 文件
+
+将 `dist/` 文件夹内容上传到服务器，**保持目录结构**：
+
+```
+/www/wwwroot/petclinic-frontend/
+├── index.html
+├── favicon.ico
+└── assets/           ← 必须有这个文件夹
+    ├── index-xxx.js
+    └── index-xxx.css
+```
+
+### 5. Nginx 配置
+
+在 Java 项目的 **nginx配置文件** 中添加：
+
+```nginx
+server {
+    listen 80;
+    server_name 你的域名或IP;
+    root /www/wwwroot/petclinic-frontend;
+    index index.html;
+
+    # API 反向代理
+    location /api {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Vue SPA 路由支持
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+### 6. 防火墙配置
+
+确保以下端口已放行：
+
+| 端口 | 用途 |
+|------|------|
+| 80 | HTTP 访问 |
+| 443 | HTTPS 访问 |
+| 8080 | 后端 API（可选，内网访问） |
+| 3306 | MySQL（建议仅内网） |
+
+**阿里云安全组** 也需要放行对应端口。
+
+### 7. 域名配置（可选）
+
+#### 7.1 域名解析
+
+在域名服务商添加 A 记录：
+
+| 主机记录 | 记录类型 | 记录值 |
+|---------|---------|--------|
+| @ | A | 服务器IP |
+| www | A | 服务器IP |
+
+#### 7.2 备案说明
+
+> ⚠️ **注意**：使用中国大陆服务器，域名必须完成 ICP 备案才能通过 80/443 端口访问。
+> 
+> **临时方案**：使用非标准端口（如 8081）可绕过备案限制，访问地址改为 `http://域名:8081`
+
+### 8. 常见问题
+
+| 问题 | 解决方案 |
+|------|---------|
+| 页面白屏 | 检查 `assets/` 目录结构是否正确 |
+| 接口 404 | 检查 Nginx 反向代理配置 |
+| 接口 502 | 检查后端 Java 项目是否正常运行 |
+| JS 加载失败 MIME 错误 | 确保 JS/CSS 文件在 `assets/` 子目录下 |
+| 域名无法访问 | 检查域名解析、备案状态 |
