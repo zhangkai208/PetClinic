@@ -23,3 +23,11 @@ export const update = (id, data) => {
 export const deleteBatch = (ids) => {
     return request.delete('/appointment/delete', { data: ids })
 }
+
+// 添加评价
+export const addEvaluation = (id, evaluation) => {
+    return request.put('/appointment/evaluation', evaluation, {
+        params: { id },
+        headers: { 'Content-Type': 'text/plain' }
+    })
+}
