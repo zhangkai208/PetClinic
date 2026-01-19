@@ -47,4 +47,9 @@ public class AppointmentController {
         boolean create = appointmentService.deleteAppointment(ids);
         return create ? ResultUtil.success("删除成功") : ResultUtil.fail("删除失败");
     }
+    @PutMapping("/evaluation")
+    public ResultUtil<String> addEvaluation(@RequestBody String evaluation, @RequestParam long id){
+        boolean create = appointmentService.addEvaluation(evaluation,id);
+        return create ? ResultUtil.success("评价成功") : ResultUtil.fail("评价失败");
+    }
 }

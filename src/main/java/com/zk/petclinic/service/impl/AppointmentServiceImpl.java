@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zk.petclinic.domain.Appointment;
 import com.zk.petclinic.domain.ServiceProvider;
+import com.zk.petclinic.enums.AppointmentStatus;
 import com.zk.petclinic.enums.ServiceProviderStatus;
 import com.zk.petclinic.mapper.AppointmentMapper;
-import com.zk.petclinic.mapper.ServiceProviderMapper;
 import com.zk.petclinic.service.AppointmentService;
 import com.zk.petclinic.service.ServiceProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+
 
 /**
 * @author 张恺
@@ -98,6 +100,20 @@ public class AppointmentServiceImpl extends ServiceImpl<AppointmentMapper, Appoi
             result.add(item);
         }
         return result;
+    }
+
+    @Override
+    public boolean addEvaluation(String evaluation, long id) {
+        LambdaQueryWrapper<Appointment> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(Appointment::getId, id);
+        Appointment appointment = this.getById(id);
+        if(appointment.getStatus().equals(AppointmentStatus.Completed)){
+        appointment.setEvaluation(evaluation);
+        }
+        else {
+            throw new RuntimeException("该预约未完成，无法评价");
+        }
+        return this.updateById(appointment);
     }
 }
 

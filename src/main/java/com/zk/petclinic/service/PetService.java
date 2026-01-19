@@ -1,7 +1,7 @@
 package com.zk.petclinic.service;
 
 import com.zk.petclinic.domain.Pet;
-import com.zk.petclinic.enums.Petgender;
+import com.zk.petclinic.enums.PetGender;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,7 +54,7 @@ public interface PetService extends IService<Pet> {
     /**
      * 根据性别查询当前用户的宠物
      */
-    List<Pet> findByGender(Petgender gender, Long ownerId);
+    List<Pet> findByGender(PetGender gender, Long ownerId);
 
     /**
      * 上传相册（支持多张照片）

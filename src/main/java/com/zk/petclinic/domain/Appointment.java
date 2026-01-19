@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
+
+import com.zk.petclinic.enums.AppointmentStatus;
 import lombok.Data;
 
 /**
@@ -48,7 +50,7 @@ public class Appointment {
      * 状态：0-待确认，1-已预约，2-已完成，3-已取消
      */
     @TableField(value = "status")
-    private Integer status;
+    private AppointmentStatus status;
 
     /**
      * 备注
@@ -61,6 +63,19 @@ public class Appointment {
      */
     @TableField(value = "create_time")
     private Date createTime;
+
+    /**
+     *
+     *金额
+     */
+    @TableField(value = "money")
+    private Long money;
+
+    /**
+     * 完成评价
+     */
+    @TableField(value = "evaluation")
+    private String evaluation;
 
     @Override
     public boolean equals(Object that) {

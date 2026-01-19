@@ -28,4 +28,6 @@ public interface AppointmentService extends IService<Appointment> {
      * @return 日期和预约数量的列表
      */
     List<Map<String, Object>> getAppointmentTrend(int days);
+
+    boolean addEvaluation(String evaluation, long id);
 }

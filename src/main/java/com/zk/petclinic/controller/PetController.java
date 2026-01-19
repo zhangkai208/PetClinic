@@ -3,7 +3,7 @@ package com.zk.petclinic.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zk.petclinic.domain.Pet;
 import com.zk.petclinic.domain.SysUser;
-import com.zk.petclinic.enums.Petgender;
+import com.zk.petclinic.enums.PetGender;
 import com.zk.petclinic.service.PetService;
 import com.zk.petclinic.service.SysUserService;
 import com.zk.petclinic.util.ResultUtil;
@@ -95,7 +95,7 @@ public class PetController {
      * @param gender 性别枚举：MALE(公)、FEMALE(母)、UNKNOWN(未知)
      */
     @GetMapping("/gender/{gender}")
-    public ResultUtil<List<Pet>> findByGender(@PathVariable Petgender gender) {
+    public ResultUtil<List<Pet>> findByGender(@PathVariable PetGender gender) {
         String userIdStr = ThreadLocalUtil.get();
         if (userIdStr == null || userIdStr.isEmpty()) {
             return ResultUtil.fail("请先登录");

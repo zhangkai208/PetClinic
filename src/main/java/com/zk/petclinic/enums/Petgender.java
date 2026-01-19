@@ -8,7 +8,7 @@ import lombok.Getter;
  * 宠物性别枚举
  */
 @Getter
-public enum Petgender {
+public enum PetGender {
     UNKNOWN(0, "未知"),
     MALE(1, "公"),
     FEMALE(2, "母");
@@ -19,7 +19,7 @@ public enum Petgender {
     @JsonValue  // JSON序列化时返回的值
     private final String label;
 
-    Petgender(Integer value, String label) {
+    PetGender(Integer value, String label) {
         this.value = value;
         this.label = label;
     }
@@ -27,8 +27,8 @@ public enum Petgender {
     /**
      * 根据值获取枚举
      */
-    public static Petgender getByValue(Integer value) {
-        for (Petgender petgender : values()) {
+    public static PetGender getByValue(Integer value) {
+        for (PetGender petgender : values()) {
             if (petgender.getValue().equals(value)) {
                 return petgender;
             }
@@ -39,8 +39,8 @@ public enum Petgender {
     /**
      * 根据标签获取枚举
      */
-    public static Petgender getByLabel(String label) {
-        for (Petgender petgender : values()) {
+    public static PetGender getByLabel(String label) {
+        for (PetGender petgender : values()) {
             if (petgender.getLabel().equals(label)) {
                 return petgender;
             }

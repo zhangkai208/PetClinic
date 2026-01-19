@@ -79,7 +79,9 @@ public class SecurityConfig {
                 .requestMatchers("/chatMessage/**").authenticated()
                 
                 // ========== 5. 预约模块 ==========
-                // 预约功能（都可用）
+                // 评价功能（仅宠物主人和管理员可评价，服务商不能自己评价自己）
+                .requestMatchers(HttpMethod.PUT, "/appointment/evaluation").hasAnyRole("OWNER", "ADMIN")
+                // 预约其他功能（都可用）
                 .requestMatchers("/appointment/**").hasAnyRole("OWNER", "PROVIDER", "ADMIN")
                 
                 // ========== 6. 健康记录模块 ==========
