@@ -6,6 +6,19 @@
         <h1>健康记录</h1>
         <p>管理宠物的疫苗、驱虫、用药和健康笔记</p>
       </div>
+      <!-- 到期提醒摘要 -->
+      <div class="reminder-summary" v-if="reminderStats.total > 0">
+        <el-badge :value="reminderStats.total" type="danger" :max="99">
+          <el-button type="warning" plain size="small">
+            ⚠️ 待处理提醒
+          </el-button>
+        </el-badge>
+        <span class="reminder-text">
+          <span v-if="reminderStats.overdue > 0" class="overdue">已过期{{ reminderStats.overdue }}项</span>
+          <span v-if="reminderStats.overdue > 0 && reminderStats.upcoming > 0"> | </span>
+          <span v-if="reminderStats.upcoming > 0" class="upcoming">即将到期{{ reminderStats.upcoming }}项</span>
+        </span>
+      </div>
     </div>
 
     <!-- 服务商未审核通过提示 -->
@@ -101,7 +114,10 @@
         <div class="record-header">
           <span class="record-icon">{{ getRecordIcon(record.recordType) }}</span>
           <span class="record-type">{{ getRecordTypeName(record.recordType) }}</span>
-          <el-tag v-if="isUpcoming(record.nextDate)" type="warning" size="small">
+          <el-tag v-if="isOverdue(record.nextDate)" type="danger" size="small">
+            已过期
+          </el-tag>
+          <el-tag v-else-if="isUpcoming(record.nextDate)" type="warning" size="small">
             即将到期
           </el-tag>
         </div>
@@ -332,6 +348,26 @@ const isUpcoming = (nextDate) => {
   return diffDays >= 0 && diffDays <= 7
 }
 
+// 检查是否已过期
+const isOverdue = (nextDate) => {
+  if (!nextDate) return false
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)  // 设置为今天0点
+  const next = new Date(nextDate)
+  return next < now
+}
+
+// 提醒统计
+const reminderStats = computed(() => {
+  const upcoming = records.value.filter(r => isUpcoming(r.nextDate)).length
+  const overdue = records.value.filter(r => isOverdue(r.nextDate)).length
+  return {
+    upcoming,
+    overdue,
+    total: upcoming + overdue
+  }
+})
+
 // 加载宠物列表
 const loadPets = async () => {
   // 如果是服务商且未审核通过，不加载宠物
@@ -512,6 +548,9 @@ onMounted(async () => {
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 24px;
 
   h1 {
@@ -525,6 +564,26 @@ onMounted(async () => {
     font-size: 14px;
     color: #6b7280;
     margin: 0;
+  }
+}
+
+.reminder-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .reminder-text {
+    font-size: 13px;
+    
+    .overdue {
+      color: #f56c6c;
+      font-weight: 500;
+    }
+    
+    .upcoming {
+      color: #e6a23c;
+      font-weight: 500;
+    }
   }
 }
 

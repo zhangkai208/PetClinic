@@ -6,6 +6,19 @@
         <h1>预约管理</h1>
         <p>管理宠物的服务预约，跟踪预约状态</p>
       </div>
+      <!-- 预约时间提醒摘要 -->
+      <div class="reminder-summary" v-if="appointmentStats.total > 0">
+        <el-badge :value="appointmentStats.total" type="danger" :max="99">
+          <el-button type="warning" plain size="small">
+            ⏰ 预约提醒
+          </el-button>
+        </el-badge>
+        <span class="reminder-text">
+          <span v-if="appointmentStats.overdue > 0" class="overdue">已过期{{ appointmentStats.overdue }}个</span>
+          <span v-if="appointmentStats.overdue > 0 && appointmentStats.upcoming > 0"> | </span>
+          <span v-if="appointmentStats.upcoming > 0" class="upcoming">今明两天{{ appointmentStats.upcoming }}个</span>
+        </span>
+      </div>
     </div>
 
     <!-- 服务商未审核通过提示 -->
@@ -123,6 +136,13 @@
             <span class="status-icon">{{ getStatusIcon(appointment.status) }}</span>
             <el-tag :type="getStatusTagType(appointment.status)" size="small">
               {{ getStatusName(appointment.status) }}
+            </el-tag>
+            <!-- 预约时间提醒标签 -->
+            <el-tag v-if="isAppointmentOverdue(appointment)" type="danger" size="small">
+              已过期
+            </el-tag>
+            <el-tag v-else-if="isAppointmentUpcoming(appointment)" type="warning" size="small">
+              即将到期
             </el-tag>
           </div>
           
@@ -559,6 +579,42 @@ const formatDateTime = (date) => {
   })
 }
 
+// 检查预约是否即将到期（今明两天，且状态为待确认或已预约）
+const isAppointmentUpcoming = (appointment) => {
+  if (!appointment.appointmentTime) return false
+  // 只检查待确认(0)和已预约(1)状态
+  const status = appointment.status
+  if (status !== 0 && status !== 1 && status !== '待确认' && status !== '已预约') return false
+  
+  const now = new Date()
+  const apptTime = new Date(appointment.appointmentTime)
+  const diffDays = (apptTime - now) / (1000 * 60 * 60 * 24)
+  return diffDays >= 0 && diffDays <= 2
+}
+
+// 检查预约是否已过期（预约时间已过，且状态为待确认或已预约）
+const isAppointmentOverdue = (appointment) => {
+  if (!appointment.appointmentTime) return false
+  // 只检查待确认(0)和已预约(1)状态，已完成和已取消不算过期
+  const status = appointment.status
+  if (status !== 0 && status !== 1 && status !== '待确认' && status !== '已预约') return false
+  
+  const now = new Date()
+  const apptTime = new Date(appointment.appointmentTime)
+  return apptTime < now
+}
+
+// 预约时间提醒统计
+const appointmentStats = computed(() => {
+  const upcoming = appointments.value.filter(a => isAppointmentUpcoming(a)).length
+  const overdue = appointments.value.filter(a => isAppointmentOverdue(a)).length
+  return {
+    upcoming,
+    overdue,
+    total: upcoming + overdue
+  }
+})
+
 // 加载宠物列表
 const loadPets = async () => {
   try {
@@ -854,6 +910,9 @@ onMounted(async () => {
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 24px;
 
   h1 {
@@ -867,6 +926,26 @@ onMounted(async () => {
     font-size: 14px;
     color: #6b7280;
     margin: 0;
+  }
+}
+
+.reminder-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .reminder-text {
+    font-size: 13px;
+    
+    .overdue {
+      color: #f56c6c;
+      font-weight: 500;
+    }
+    
+    .upcoming {
+      color: #e6a23c;
+      font-weight: 500;
+    }
   }
 }
 
