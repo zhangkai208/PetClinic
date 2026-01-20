@@ -67,4 +67,6 @@ public interface SysUserService extends IService<SysUser> {
      * @return 角色名称和数量的列表
      */
     List<Map<String, Object>> getUserRoleDistribution();
+
+    List<SysUser> searchUsers(String keyword);
 }

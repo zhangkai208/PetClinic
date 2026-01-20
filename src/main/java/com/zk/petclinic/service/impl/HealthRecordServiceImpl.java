@@ -50,6 +50,13 @@ public class HealthRecordServiceImpl extends ServiceImpl<HealthRecordMapper, Hea
     public List<HealthRecord> listRecord() {
         return this.list();
     }
+
+    @Override
+    public List<HealthRecord> getRecordsByPetId(Long petId) {
+        LambdaQueryWrapper<HealthRecord> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(HealthRecord::getPetId,petId);
+        return this.list(queryWrapper);
+    }
 }
 
 

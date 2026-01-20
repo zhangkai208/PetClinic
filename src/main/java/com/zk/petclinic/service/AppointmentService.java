@@ -30,4 +30,6 @@ public interface AppointmentService extends IService<Appointment> {
     List<Map<String, Object>> getAppointmentTrend(int days);
 
     boolean addEvaluation(String evaluation, long id);
+
+    List<Appointment> getAppointmentsByPetId(Long petId);
 }

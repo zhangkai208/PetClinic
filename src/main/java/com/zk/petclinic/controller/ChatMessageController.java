@@ -3,8 +3,11 @@ package com.zk.petclinic.controller;
 
 import com.zk.petclinic.domain.ChatConversation;
 import com.zk.petclinic.domain.ChatMessage;
+import com.zk.petclinic.domain.SysUser;
 import com.zk.petclinic.service.ChatConversationService;
 import com.zk.petclinic.service.ChatMessageService;
+import com.zk.petclinic.service.SysUserService;
+import com.zk.petclinic.enums.SysUserRoleType;
 import com.zk.petclinic.util.ResultUtil;
 import com.zk.petclinic.util.ThreadLocalUtil;
 import org.springframework.ai.chat.client.ChatClient;
@@ -25,6 +28,8 @@ public class ChatMessageController {
     private ChatMessageService chatMessageService;
     @Autowired
     private ChatConversationService chatConversationService;
+    @Autowired
+    private SysUserService sysUserService;
 
     /**
      * 获取当前登录用户ID
@@ -63,9 +68,25 @@ public class ChatMessageController {
         // 用于收集AI回复
         StringBuilder aiResponse = new StringBuilder();
 
+        // 获取当前用户角色类型
+        SysUser currentUser = sysUserService.getById(userId);
+        Integer roleType = currentUser != null ? currentUser.getRoleType() : SysUserRoleType.OWNER.getValue();
+        SysUserRoleType role = SysUserRoleType.getEnumByValue(roleType);
+        String roleName = role != null ? role.getLabel() : "未知";
+        boolean isAdmin = role == SysUserRoleType.ADMIN;
+
+        // 将用户ID和角色注入到消息中，让AI知道当前用户身份和权限
+        String enhancedMessage = String.format(
+                "[系统信息: 当前用户ID=%d, 角色=%s, 是否管理员=%s] 用户问题: %s",
+                userId,
+                roleName,
+                isAdmin ? "是(可查询所有用户数据)" : "否(只能查询自己的数据)",
+                message
+        );
+
         return chatClient.prompt()
-                .user(message)  // 使用用户传入的message
-                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, String.valueOf(conversationId)))  // 使用用户传入的id
+                .user(enhancedMessage)  // 使用增强后的消息
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, String.valueOf(conversationId)))
                 .stream()
                 .content()
                 .doOnNext(chunk -> {

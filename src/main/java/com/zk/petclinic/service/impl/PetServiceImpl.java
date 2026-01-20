@@ -121,4 +121,20 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
         return result;
     }
 
+    @Override
+    public List<Pet> getPetsByUserId(Long userId) {
+        LambdaQueryWrapper<Pet> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(Pet::getOwnerId, userId);
+        return this.list(queryWrapper);
+    }
+
+    @Override
+    public List<Pet> searchPets(String keyword) {
+        LambdaQueryWrapper<Pet> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(Pet::getName, keyword)
+                .or().like(Pet::getBreed, keyword)
+                .or().like(Pet::getType, keyword);
+        return this.list(queryWrapper);
+    }
+
 }

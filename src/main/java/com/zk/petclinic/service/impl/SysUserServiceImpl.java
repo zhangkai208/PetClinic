@@ -1,5 +1,6 @@
 package com.zk.petclinic.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -160,5 +161,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser>
             result.add(item);
         }
         return result;
+    }
+
+    @Override
+    public List<SysUser> searchUsers(String keyword) {
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(SysUser::getNickname, keyword);
+        return this.list(queryWrapper);
     }
 }

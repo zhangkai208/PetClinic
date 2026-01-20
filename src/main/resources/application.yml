@@ -25,6 +25,13 @@ spring:
         completions-path: /chat/completions
         options:
           model: deepseek-v3-250324
+    mcp:
+      server:
+        enabled: true
+        name: petclinic-mcp-server
+        type: SYNC
+        annotation-scanner:
+          enabled: true
 
   data:
     redis:
@@ -37,7 +44,6 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
-
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
@@ -56,3 +62,4 @@ logging:
     com.zk.petclinic: debug
     org.springframework.web: info
     org.springframework.ai.chat.client.advisor: debug
+

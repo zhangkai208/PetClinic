@@ -22,4 +22,6 @@ public interface HealthRecordService extends IService<HealthRecord> {
     boolean deleteRecord(List<Long> ids);
 
     List<HealthRecord> listRecord();
+
+    List<HealthRecord> getRecordsByPetId(Long petId);
 }

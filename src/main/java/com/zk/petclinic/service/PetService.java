@@ -68,4 +68,8 @@ public interface PetService extends IService<Pet> {
      * @return 类型名称和数量的列表
      */
     List<Map<String, Object>> getPetTypeDistribution();
+
+    List<Pet> getPetsByUserId(Long userId);
+
+    List<Pet> searchPets(String keyword);
 }

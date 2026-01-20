@@ -115,6 +115,15 @@ public class AppointmentServiceImpl extends ServiceImpl<AppointmentMapper, Appoi
         }
         return this.updateById(appointment);
     }
+
+    @Override
+    public List<Appointment> getAppointmentsByPetId(Long petId) {
+        LambdaQueryWrapper<Appointment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Appointment::getPetId, petId);
+        return this.list(queryWrapper);
+    }
+
+
 }
 
 
