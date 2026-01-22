@@ -26,12 +26,10 @@ spring:
         options:
           model: deepseek-v3-250324
     mcp:
-      server:
+      client:
         enabled: true
-        name: petclinic-mcp-server
-        type: SYNC
-        annotation-scanner:
-          enabled: true
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
 
   data:
     redis:

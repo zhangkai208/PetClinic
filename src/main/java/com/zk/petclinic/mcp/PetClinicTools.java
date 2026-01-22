@@ -128,8 +128,8 @@ public class PetClinicTools {
     /**
      * 搜索用户
      */
-    @Tool(description = "根据关键词搜索用户，可匹配用户名信息")
-    public String search_users(
+    @Tool(description = "根据关键词搜索宠物诊所系统的用户，可匹配用户名信息")
+    public String search_petclinic_users(
             @ToolParam(description = "搜索关键词") String keyword
     ) {
         List<SysUser> users = sysUserService.searchUsers(keyword);
