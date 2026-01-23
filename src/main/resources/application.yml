@@ -20,16 +20,11 @@ spring:
   ai:
     openai:
       base-url: https://ark.cn-beijing.volces.com/api/v3
-      api-key:
+      api-key: 
       chat:
         completions-path: /chat/completions
         options:
           model: deepseek-v3-250324
-    mcp:
-      client:
-        enabled: true
-        stdio:
-          servers-configuration: classpath:mcp-servers.json
 
   data:
     redis:

@@ -146,12 +146,6 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
-
-        <!-- Spring AI MCP Client (STDIO 方式) - Spring AI 1.1.2 版本 -->
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-mcp-client</artifactId>
-        </dependency>
     </dependencies>
 
 

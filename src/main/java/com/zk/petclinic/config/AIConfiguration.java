@@ -1,6 +1,6 @@
 package com.zk.petclinic.config;
 
-import com.zk.petclinic.mcp.PetClinicTools;
+import com.zk.petclinic.tools.PetClinicTools;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
@@ -8,14 +8,10 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
-import org.springframework.ai.tool.ToolCallback;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Configuration
 public class AIConfiguration implements WebMvcConfigurer {
@@ -35,20 +31,8 @@ public class AIConfiguration implements WebMvcConfigurer {
     @Bean
     public ChatClient chatClient(ChatModel chatModel,
                                  ChatMemory chatMemory,
-                                 PetClinicTools petClinicTools,
-                                 List<SyncMcpToolCallbackProvider> mcpToolProviders) {
-
-        // 1. 收集所有 MCP 工具回调
-        List<ToolCallback> allToolCallbacks = new ArrayList<>();
-        for (SyncMcpToolCallbackProvider provider : mcpToolProviders) {
-            ToolCallback[] callbacks = provider.getToolCallbacks();
-            if (callbacks != null) {
-                allToolCallbacks.addAll(List.of(callbacks));
-            }
-        }
-
-        // 2. 构建工具数组（MCP工具 + 自定义工具）
-        ToolCallback[] toolArray = allToolCallbacks.toArray(new ToolCallback[0]);
+                                 PetClinicTools petClinicTools
+                                 ) {
 
         return ChatClient.builder(chatModel)
                 .defaultSystem("""
@@ -60,12 +44,8 @@ public class AIConfiguration implements WebMvcConfigurer {
                     - get_pet_health_records: 根据宠物ID查询健康记录
                     - get_pet_appointments: 根据宠物ID查询预约记录
                     - search_pets: 根据关键词搜索宠物
-                    - search_petclinic_users: 根据关键词搜索宠物诊所系统用户
+                    - search_users: 根据关键词搜索宠物诊所系统用户
                     - count_pets_by_type: 统计各类型宠物数量
-                    
-                    ## MCP 工具
-                    - 高德地图工具 (amap): 所有用户可用，用于查询地图、路线、天气等
-                    - GitHub 工具 (github): 所有用户可用，用于查询 PetClinic 仓库信息
                     
                     ## 重要规则
                     - 每条消息开头的[系统信息]包含当前用户的ID和角色
@@ -79,7 +59,6 @@ public class AIConfiguration implements WebMvcConfigurer {
                         MessageChatMemoryAdvisor.builder(chatMemory).build()
                 )
                 .defaultTools(petClinicTools)           // 自定义 @Tool 工具
-                .defaultToolCallbacks(toolArray)        // MCP 工具
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.zk.petclinic.mcp;
+package com.zk.petclinic.tools;
 
 
 import com.zk.petclinic.domain.Appointment;
@@ -128,9 +128,9 @@ public class PetClinicTools {
     /**
      * 搜索用户
      */
-    @Tool(description = "根据关键词搜索宠物诊所系统的用户，可匹配用户名信息")
-    public String search_petclinic_users(
-            @ToolParam(description = "搜索关键词") String keyword
+    @Tool(description = "根据关键词搜索宠物诊所系统的用户，可匹配用户名或昵称信息")
+    public String search_users(
+            @ToolParam(description = "搜索关键词（用户名或昵称）") String keyword
     ) {
         List<SysUser> users = sysUserService.searchUsers(keyword);
         if (users == null || users.isEmpty()) {
@@ -138,8 +138,9 @@ public class PetClinicTools {
         }
 
         return users.stream()
-                .map(user -> String.format("用户ID: %d, 用户名: %s",
-                        user.getId(), user.getUsername()))
-                .collect(Collectors.joining(", "));
+                .map(user -> String.format("用户ID: %d, 用户名: %s, 昵称: %s, 角色: %s",
+                        user.getId(), user.getUsername(), user.getNickname(),
+                        user.getRoleType() == 1 ? "宠物主人" : user.getRoleType() == 2 ? "服务商" : "管理员"))
+                .collect(Collectors.joining("\n"));
     }
 }
