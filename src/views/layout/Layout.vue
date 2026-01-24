@@ -38,6 +38,10 @@
           <el-icon><Calendar /></el-icon>
           <template #title>预约管理</template>
         </el-menu-item>
+        <el-menu-item index="/reminders">
+          <el-icon><Message /></el-icon>
+          <template #title>邮件通知</template>
+        </el-menu-item>
         <el-menu-item index="/chat">
           <el-icon><ChatDotRound /></el-icon>
           <template #title>AI助手</template>
@@ -120,7 +124,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets, Calendar, DataLine 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets, Calendar, DataLine, Message 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'

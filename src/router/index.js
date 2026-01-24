@@ -67,6 +67,12 @@ const routes = [
         name: 'adminUsers',
         component: () => import('@/views/admin/Users.vue'),
         meta: { title: '用户管理', roles: [3] }  // 仅管理员(3)
+      },
+      {
+        path: 'reminders',
+        name: 'reminders',
+        component: () => import('@/views/reminder/Reminders.vue'),
+        meta: { title: '邮件通知', roles: [1, 2, 3] }  // 所有角色可访问
       }
     ]
   },

@@ -121,6 +121,13 @@
                   :prefix-icon="UserFilled"
                 />
               </el-form-item>
+              <el-form-item prop="email">
+                <el-input 
+                  v-model="registerForm.email" 
+                  placeholder="请输入QQ邮箱（用于接收通知）"
+                  :prefix-icon="Message"
+                />
+              </el-form-item>
               <el-form-item>
                 <el-button 
                   type="primary" 
@@ -143,7 +150,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock, UserFilled, Check } from '@element-plus/icons-vue'
+import { User, Lock, UserFilled, Check, Message } from '@element-plus/icons-vue'
 import { login, register } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'
 import { useUserInfoStore } from '@/stores/userinfo'
@@ -173,7 +180,8 @@ const registerForm = reactive({
   username: '',
   password: '',
   confirmPassword: '',
-  nickname: ''
+  nickname: '',
+  email: ''
 })
 
 const validateConfirmPassword = (rule, value, callback) => {
@@ -200,6 +208,10 @@ const registerRules = {
   nickname: [
     { required: true, message: '请输入昵称', trigger: 'blur' },
     { min: 2, max: 20, message: '昵称长度为2-20个字符', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: '请输入QQ邮箱', trigger: 'blur' },
+    { pattern: /^\d+@qq\.com$/, message: '请输入正确的QQ邮箱格式', trigger: 'blur' }
   ]
 }
 
@@ -247,7 +259,8 @@ const handleRegister = async () => {
     await register({
       username: registerForm.username,
       password: registerForm.password,
-      nickname: registerForm.nickname || undefined
+      nickname: registerForm.nickname || undefined,
+      email: registerForm.email
     })
     ElMessage.success('注册成功，请登录')
     activeTab.value = 'login'
