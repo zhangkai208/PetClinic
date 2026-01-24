@@ -11,16 +11,29 @@ spring:
       name: zk
       password: 123456
 
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: 2834969129@qq.com
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/petclinic?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    password:
 
   ai:
     openai:
       base-url: https://ark.cn-beijing.volces.com/api/v3
-      api-key: 
+      api-key:
       chat:
         completions-path: /chat/completions
         options:
@@ -37,6 +50,13 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
+
+app:
+  mail:
+    reminder:
+      enabled: true
+      sender-name: 宠物健康管理员
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
@@ -55,4 +75,3 @@ logging:
     com.zk.petclinic: debug
     org.springframework.web: info
     org.springframework.ai.chat.client.advisor: debug
-

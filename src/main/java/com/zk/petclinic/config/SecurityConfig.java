@@ -83,6 +83,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/appointment/evaluation").hasAnyRole("OWNER", "ADMIN")
                 // 预约其他功能（都可用）
                 .requestMatchers("/appointment/**").hasAnyRole("OWNER", "PROVIDER", "ADMIN")
+                .requestMatchers("/appointment-reminder/**").authenticated()
                 
                 // ========== 6. 健康记录模块 ==========
                 // 健康记录查看（主人、服务商、管理员都可读）

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zk.petclinic.mapper.AppointmentReminderMapper">
+
+    <resultMap id="BaseResultMap" type="com.zk.petclinic.domain.AppointmentReminder">
+            <id property="id" column="id" />
+            <result property="appointmentId" column="appointment_id" />
+            <result property="userId" column="user_id" />
+            <result property="email" column="email" />
+            <result property="sendTime" column="send_time" />
+            <result property="status" column="status" />
+            <result property="errorMessage" column="error_message" />
+            <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,appointment_id,user_id,email,send_time,status,
+        error_message,create_time
+    </sql>
+</mapper>
