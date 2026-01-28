@@ -22,11 +22,14 @@ PetClinic/src/main/java/com/zk/petclinic/
 │   ├── SysUserController.java   # 用户管理
 │   ├── PetController.java       # 宠物管理
 │   ├── HealthRecordController.java    # 健康记录
-│   ├── AppointmentController.java     # 预约管理
+│   ├── AppointmentController.java     # 预约管理（含评价、付款）
+│   ├── AppointmentReminderController.java # 预约提醒管理
 │   ├── ServiceProviderController.java # 服务商管理
 │   ├── DashboardController.java       # 数据看板统计
 │   ├── ChatConversationController.java # AI对话会话
 │   └── ChatMessageController.java      # AI对话消息
+├── scheduler/                   # 定时任务
+│   └── AppointmentReminderScheduler.java # 预约提醒定时调度
 ├── service/                     # 服务层
 │   ├── impl/                    # 服务实现
 │   └── ...Service.java          # 服务接口
@@ -35,7 +38,8 @@ PetClinic/src/main/java/com/zk/petclinic/
 │   ├── SysUser.java
 │   ├── Pet.java
 │   ├── HealthRecord.java
-│   ├── Appointment.java
+│   ├── Appointment.java         # 含评价(evaluation)、金额(money)字段
+│   ├── AppointmentReminder.java # 预约提醒记录
 │   ├── ServiceProvider.java
 │   ├── ChatConversation.java
 │   ├── ChatMessage.java
@@ -71,17 +75,11 @@ PetClinic/src/main/java/com/zk/petclinic/
 | 宠物档案管理 | ✅ 完成 | CRUD、头像/相册上传、按性别筛选 |
 | 健康记录管理 | ✅ 完成 | 疫苗/驱虫/用药/笔记记录，权限校验 |
 | 服务商管理 | ✅ 完成 | 入驻申请、审核、状态管理 |
-| 预约管理 | ✅ 完成 | 创建/取消预约、状态管理 |
+| 预约管理 | ✅ 完成 | 创建/取消预约、状态管理、**服务评价**、**预约金额** |
+| 邮件提醒推送 | ✅ 完成 | **QQ邮箱SMTP**、定时任务(每日9点)、双向通知(宠物主人+服务商) |
 | 管理员看板 | ✅ 完成 | 统计卡片、趋势图表、分布图表 |
 | AI智能助手 | ✅ 完成 | 基于Spring AI，支持流式对话 |
 | 全局异常处理 | ✅ 完成 | 多类型异常精细化处理 |
-
-### ⏳ 待完善模块
-
-| 模块 | 状态 | 说明 |
-|------|------|------|
-| 提醒与消息 | ⏳ 待开发 | 疫苗/驱虫到期提醒推送 |
-| 支付与财务 | ⏳ 可选 | 模拟支付流程 |
 
 ---
 
@@ -122,9 +120,10 @@ PetClinic/src/main/java/com/zk/petclinic/
 | 方法 | 路径 | 说明 | 权限 |
 |------|------|------|------|
 | GET | `/appointment/page` | 分页查询预约 | OWNER/PROVIDER/ADMIN |
-| POST | `/appointment/create` | 创建预约 | OWNER/PROVIDER/ADMIN |
+| POST | `/appointment/create` | 创建预约（含金额） | OWNER/PROVIDER/ADMIN |
 | PUT | `/appointment/{id}` | 更新预约状态 | OWNER/PROVIDER/ADMIN |
 | DELETE | `/appointment/delete` | 删除预约 | OWNER/PROVIDER/ADMIN |
+| PUT | `/appointment/evaluation` | **添加服务评价** | OWNER/PROVIDER/ADMIN |
 
 ### 5. 服务商模块 `/serviceProviders`
 | 方法 | 路径 | 说明 | 权限 |
@@ -149,6 +148,13 @@ PetClinic/src/main/java/com/zk/petclinic/
 | POST | `/ChatConversation/create` | 创建对话 | 已登录 |
 | GET | `/chatMessage/stream` | 流式AI对话 | 已登录 |
 
+### 8. 预约提醒模块 `/appointment-reminder`
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/appointment-reminder/reminder` | 手动触发预约提醒 | ADMIN |
+| GET | `/appointment-reminder/list` | 获取所有提醒记录 | ADMIN |
+| GET | `/appointment-reminder/page` | 分页查询我的提醒记录 | 已登录 |
+
 ---
 
 ## 五、权限角色说明
@@ -161,7 +167,147 @@ PetClinic/src/main/java/com/zk/petclinic/
 
 ---
 
-## 六、启动方式
+## 六、QQ邮箱定时推送功能（重点）
+
+### 功能概述
+
+系统实现了基于 **Spring Boot Mail + QQ邮箱SMTP** 的预约提醒功能，通过定时任务在每天早上9点自动发送次日预约的邮件提醒。
+
+### 技术实现
+
+#### 1. 核心组件
+
+| 组件 | 文件 | 说明 |
+|------|------|------|
+| 定时调度器 | `AppointmentReminderScheduler.java` | `@Scheduled(cron = "0 0 9 * * ?")` 每日9点执行 |
+| 邮件服务 | `EmailServiceImpl.java` | 封装 `JavaMailSender`，发送简单文本邮件 |
+| 业务逻辑 | `AppointmentReminderServiceImpl.java` | 查询预约、构建邮件内容、记录发送结果 |
+| 提醒记录 | `AppointmentReminder.java` | 存储发送记录，防止重复发送 |
+
+#### 2. 业务流程
+
+```
+定时任务触发 (每日9:00)
+    ↓
+查询次日有效预约（待确认/已预约状态）
+    ↓
+遍历每个预约
+    ├── 发送给宠物主人（提醒赴约）
+    └── 发送给服务商（提醒接待）
+    ↓
+记录发送结果到数据库
+    ↓
+返回成功发送数量
+```
+
+#### 3. 邮件内容示例
+
+**宠物主人收到的邮件：**
+```
+亲爱的 张三：
+
+您好！温馨提醒您，您的宠物明天有一个预约服务：
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🐾 宠物名字：小白
+📅 预约时间：2026年01月25日 10:00
+🏥 服务类型：疫苗接种
+👨‍⚕️ 服务商：爱宠宠物医院
+💰 预约金额：200 元
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+请提前做好准备，按时赴约哦！
+
+—— 宠物健康管理系统
+```
+
+**服务商收到的邮件：**
+```
+尊敬的 爱宠宠物医院：
+
+您好！温馨提醒您，明天有一位客户预约了您的服务：
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 客户姓名：张三
+📞 联系电话：13800138000
+🐾 宠物名字：小白
+🐕 宠物类型：狗
+📅 预约时间：2026年01月25日 10:00
+🏥 服务类型：疫苗接种
+💰 预约金额：200 元
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+请提前做好准备，为客户提供优质服务！
+
+—— 宠物健康管理系统
+```
+
+#### 4. 配置说明
+
+在 `application.yml` 中配置 QQ 邮箱 SMTP：
+
+```yaml
+spring:
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: your-email@qq.com
+    password: your-authorization-code  # QQ邮箱授权码（非登录密码）
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+# 自定义配置
+app:
+  mail:
+    reminder:
+      enabled: true                    # 是否启用提醒功能
+      sender-name: 宠物健康管理系统     # 发件人显示名称
+```
+
+> **注意**：QQ邮箱需要在设置中开启SMTP服务，并生成授权码。
+
+#### 5. 防重复发送机制
+
+- 每次发送前检查 `appointment_reminder` 表
+- 按 `appointment_id + user_id` 判断是否已发送
+- 避免同一预约对同一用户重复发送
+
+#### 6. 手动触发测试
+
+可通过 API 接口手动触发提醒（用于测试）：
+
+```bash
+# 发送明天的预约提醒
+GET /api/appointment-reminder/reminder
+
+# 发送指定日期的预约提醒
+GET /api/appointment-reminder/reminder?date=2026-01-25
+```
+
+---
+
+## 七、服务评价与付款功能
+
+### 预约金额
+
+- 预约表新增 `money` 字段（Long类型）
+- 创建预约时可设置服务金额
+- 金额会在邮件提醒中展示
+
+### 服务评价
+
+- 预约表新增 `evaluation` 字段（String类型）
+- 服务完成后，用户可对服务进行评价
+- 接口：`PUT /api/appointment/evaluation?id={预约ID}`
+
+---
+
+## 八、启动方式
 
 ```bash
 # 1. 确保 MySQL 和 Redis 已启动
@@ -188,7 +334,7 @@ mvn spring-boot:run
 
 ---
 
-## 七、宝塔面板部署指南
+## 九、宝塔面板部署指南
 
 ### 1. 服务器环境准备
 
