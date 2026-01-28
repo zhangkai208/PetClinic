@@ -37,7 +37,11 @@ spring:
       chat:
         completions-path: /chat/completions
         options:
-          model: deepseek-v3-250324
+          model: deepseek-v3-2-251201
+    mcp:
+      client:
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
 
   data:
     redis:

@@ -8,9 +8,12 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 
 @Configuration
@@ -25,18 +28,17 @@ public class AIConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * 创建默认的 ChatClient（包含所有工具，但 MySQL 只有管理员可用）
-     * 注意：实际的权限控制需要在运行时判断用户角色
+     * 创建默认的 ChatClient（包含自定义工具和 MCP 工具）
      */
     @Bean
     public ChatClient chatClient(ChatModel chatModel,
                                  ChatMemory chatMemory,
-                                 PetClinicTools petClinicTools
-                                 ) {
+                                 PetClinicTools petClinicTools,
+                                 List<ToolCallbackProvider> toolCallbackProviders) {  // 使用自动配置的 ToolCallbackProvider
 
-        return ChatClient.builder(chatModel)
+        var builder = ChatClient.builder(chatModel)
                 .defaultSystem("""
-                    你是一个专业的宠物诊所助手，可以回答关于宠物健康、宠物护理、预约挂号等相关问题。
+                   你是一个专业的宠物诊所助手，可以回答关于宠物健康、宠物护理、预约挂号等相关问题。
                     请用友好专业的语气回复用户。你的创造者是一个名字叫张恺的男生。
                     
                     ## 自定义工具（所有用户可用）
@@ -53,12 +55,22 @@ public class AIConfiguration implements WebMvcConfigurer {
                     - 非管理员只能查询自己的数据
                     - 管理员可以查询所有用户的数据
                     - 必须调用工具获取真实数据，不要编造任何数据！
+                    
+                    ### 外部服务 (MCP)
+                    - **地图服务**: 当用户问"天气"、"路线"、"附近的店"时 -> 自动调用 `maps_weather`, `maps_search_around` 等
                     """)
                 .defaultAdvisors(
                         new SimpleLoggerAdvisor(),
                         MessageChatMemoryAdvisor.builder(chatMemory).build()
                 )
-                .defaultTools(petClinicTools)           // 自定义 @Tool 工具
-                .build();
+                .defaultTools(petClinicTools);  // 自定义 @Tool 工具
+
+        // 注册所有 MCP 工具（使用自动配置的 ToolCallbackProvider）
+        for (ToolCallbackProvider provider : toolCallbackProviders) {
+            builder.defaultToolCallbacks(provider);
+        }
+
+        return builder.build();
     }
 }
+
