@@ -18,10 +18,11 @@ PetClinic-UI/src/
 │   ├── sysuser.js          # 用户相关接口
 │   ├── pet.js              # 宠物相关接口
 │   ├── healthRecord.js     # 健康记录接口
-│   ├── appointment.js      # 预约接口
+│   ├── appointment.js      # 预约接口（含评价）
 │   ├── serviceProvider.js  # 服务商接口
 │   ├── dashboard.js        # 数据看板接口
-│   └── chat.js             # AI对话接口
+│   ├── chat.js             # AI对话接口
+│   └── reminder.js         # 预约提醒接口
 ├── stores/                 # Pinia状态管理
 │   ├── token.js            # Token存储
 │   └── userinfo.js         # 用户信息存储
@@ -43,11 +44,13 @@ PetClinic-UI/src/
     ├── health/
     │   └── HealthRecords.vue  # 健康记录
     ├── appointment/
-    │   └── Appointments.vue   # 预约管理
+    │   └── Appointments.vue   # 预约管理（含评价、付款）
     ├── service/
     │   └── ServiceProviders.vue  # 服务商管理
-    └── chat/
-        └── AIChat.vue      # AI智能助手
+    ├── chat/
+    │   └── AIChat.vue      # AI智能助手
+    └── reminder/
+        └── Reminders.vue   # 邮件通知管理
 ```
 
 ---
@@ -64,19 +67,20 @@ PetClinic-UI/src/
 | 宠物管理 | Pets.vue | ✅ 完成 | 列表、搜索、筛选、CRUD、头像上传 |
 | 宠物相册 | PetGallery.vue | ✅ 完成 | 宠物照片管理、画廊展示 |
 | 健康记录 | HealthRecords.vue | ✅ 完成 | 疫苗/驱虫/用药/笔记记录管理 |
-| 预约管理 | Appointments.vue | ✅ 完成 | 预约列表、状态管理 |
+| 预约管理 | Appointments.vue | ✅ 完成 | 预约列表、状态管理、**扫码付款**、**服务评价** |
 | 服务商管理 | ServiceProviders.vue | ✅ 完成 | 服务商列表、申请入驻、审核 |
 | 数据看板 | Dashboard.vue | ✅ 完成 | ECharts图表、统计卡片 |
 | 用户管理 | Users.vue | ✅ 完成 | 用户CRUD、角色管理(管理员) |
 | AI助手 | AIChat.vue | ✅ 完成 | 流式对话、会话管理 |
+| 邮件通知 | Reminders.vue | ✅ 完成 | **邮件发送记录、手动触发提醒(管理员)** |
 
 ### 🔐 权限控制
 
 | 角色 | 可访问页面 |
 |------|------------|
-| 宠物主人 (1) | 宠物管理、宠物相册、健康记录、预约管理、AI助手、个人中心 |
-| 服务商 (2) | 服务商管理、健康记录、预约管理、AI助手、个人中心 |
-| 管理员 (3) | **数据看板**、用户管理、服务商管理、健康记录、预约管理、AI助手、个人中心 |
+| 宠物主人 (1) | 宠物管理、宠物相册、健康记录、预约管理、邮件通知、AI助手、个人中心 |
+| 服务商 (2) | 服务商管理、健康记录、预约管理、邮件通知、AI助手、个人中心 |
+| 管理员 (3) | **数据看板**、用户管理、服务商管理、健康记录、预约管理、**邮件通知(含手动发送)**、AI助手、个人中心 |
 
 ---
 
@@ -93,6 +97,7 @@ PetClinic-UI/src/
   /health-records   → 健康记录 (ALL)
   /appointments     → 预约管理 (ALL)
   /service-providers→ 服务商管理 (PROVIDER, ADMIN)
+  /reminders        → 邮件通知 (ALL)
   /chat             → AI助手 (ALL)
   /profile          → 个人中心 (ALL)
 ```
@@ -124,7 +129,63 @@ PetClinic-UI/src/
 
 ---
 
-## 六、启动方式
+## 六、新增功能模块（重点）
+
+### 1. 扫码付款功能
+
+预约管理页面集成扫码付款流程：
+
+**流程说明**：
+1. 宠物主人创建预约时，填写服务类型、预约时间、金额
+2. 提交后弹出付款码弹窗，展示微信/支付宝二维码
+3. 15秒倒计时自动确认付款并创建预约
+4. 服务商/管理员创建预约无需付款流程
+
+**技术实现**：
+- `paymentDialogVisible` 控制付款弹窗
+- `paymentCountdown` 倒计时计数器
+- 双二维码展示（微信+支付宝）
+
+### 2. 服务评价功能
+
+预约完成后支持用户评价：
+
+**功能特性**：
+- 仅 **已完成** 状态的预约可评价
+- 仅 **宠物主人** 和 **管理员** 可评价
+- 已评价的预约不可重复评价
+- 评价内容限制500字
+
+**技术实现**：
+- `addEvaluation` API 接口
+- `evaluationDialogVisible` 评价弹窗
+- `ChatDotRound` 图标作为评价按钮
+
+### 3. 邮件通知功能（重点）
+
+独立的邮件通知管理页面（`Reminders.vue`）：
+
+**功能特性**：
+
+| 功能 | 普通用户 | 管理员 |
+|------|---------|--------|
+| 查看提醒记录 | ✅ 仅自己的 | ✅ 全部 |
+| 发送状态统计 | ❌ | ✅ |
+| 手动触发发送 | ❌ | ✅ |
+| 选择发送日期 | ❌ | ✅ |
+
+**页面组成**：
+- 📊 统计卡片（成功/失败/总计）
+- 📬 邮件列表（卡片式展示）
+- 🔍 详情弹窗（查看发送详情）
+- 📤 发送弹窗（管理员手动触发）
+
+**日期快捷选项**：
+- 明天、后天、下周
+
+---
+
+## 七、启动方式
 
 ```bash
 # 安装依赖
@@ -141,7 +202,7 @@ npm run build
 
 ---
 
-## 七、环境配置
+## 八、环境配置
 
 项目通过 Vite 环境变量管理 API 地址：
 
@@ -157,7 +218,7 @@ baseURL: import.meta.env.VITE_APP_BASE_API || 'http://localhost:8080/api'
 
 ---
 
-## 八、开发规范
+## 九、开发规范
 
 - **命名规范**：组件使用 PascalCase，文件夹使用 kebab-case
 - **样式**：使用 SCSS，组件内样式使用 `scoped`
@@ -165,7 +226,7 @@ baseURL: import.meta.env.VITE_APP_BASE_API || 'http://localhost:8080/api'
 
 ---
 
-## 九、论文素材
+## 十、论文素材
 
 每完成一个模块：
 1. 截取关键页面截图，放入 `docs/screenshots/`
