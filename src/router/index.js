@@ -69,6 +69,12 @@ const routes = [
         meta: { title: '用户管理', roles: [3] }  // 仅管理员(3)
       },
       {
+        path: 'admin/knowledge',
+        name: 'adminKnowledge',
+        component: () => import('@/views/admin/Knowledge.vue'),
+        meta: { title: 'AI知识库', roles: [3] }  // 仅管理员(3)
+      },
+      {
         path: 'reminders',
         name: 'reminders',
         component: () => import('@/views/reminder/Reminders.vue'),

@@ -358,13 +358,12 @@ const formatMessage = (content) => {
   overflow-y: auto;
   padding: 12px 8px;
   
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
+  // 隐藏滚动条但保持滚动功能
+  scrollbar-width: none;  // Firefox
+  -ms-overflow-style: none;  // IE 10+
   
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
+  &::-webkit-scrollbar {
+    display: none;  // Chrome, Safari, Edge
   }
 }
 

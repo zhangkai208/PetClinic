@@ -46,6 +46,10 @@
           <el-icon><ChatDotRound /></el-icon>
           <template #title>AI助手</template>
         </el-menu-item>
+        <el-menu-item v-if="isAdmin" index="/admin/knowledge">
+          <el-icon><Collection /></el-icon>
+          <template #title>AI知识库</template>
+        </el-menu-item>
         <el-menu-item index="/profile">
           <el-icon><User /></el-icon>
           <template #title>个人中心</template>
@@ -124,7 +128,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets, Calendar, DataLine, Message 
+  HomeFilled, User, UserFilled, ArrowDown, SwitchButton, Expand, Fold, Picture, ChatDotRound, OfficeBuilding, Tickets, Calendar, DataLine, Message, Collection 
 } from '@element-plus/icons-vue'
 import { logout } from '@/api/sysuser'
 import { useTokenStore } from '@/stores/token'
