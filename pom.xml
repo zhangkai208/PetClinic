@@ -56,6 +56,24 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- Redis Stack -->
+
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-starter-vector-store-redis</artifactId>
+            </dependency>
+
+            <!-- Spring AI Advisors Vector Store (包含 QuestionAnswerAdvisor) -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-advisors-vector-store</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+            </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -135,6 +153,7 @@
             <artifactId>qiniu-java-sdk</artifactId>
             <version>7.13.1</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>

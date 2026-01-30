@@ -2,22 +2,65 @@ package com.zk.petclinic.config;
 
 import com.zk.petclinic.tools.PetClinicTools;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.openai.OpenAiEmbeddingModel;
+import org.springframework.ai.openai.OpenAiEmbeddingOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
+import org.springframework.ai.document.MetadataMode;
+import org.springframework.ai.retry.RetryUtils;
+
 
 @Configuration
 public class AIConfiguration implements WebMvcConfigurer {
+
+    // 硅基流动 API 配置
+    @Value("${siliconflow.api-key}")
+    private String siliconflowApiKey;
+
+    /**
+     * 使用硅基流动的 BAAI/bge-m3 作为 Embedding 模型（免费）
+     * 按照 Spring AI 1.1.2 官方文档创建
+     * 
+     * @Primary 确保优先使用此 Bean，覆盖自动配置
+     */
+    @Bean
+    @Primary
+    public EmbeddingModel embeddingModel() {
+        // 创建硅基流动 API 客户端（OpenAI 兼容）
+        // 注意：baseUrl 不要包含 /v1，因为 Spring AI 默认会添加 /v1/embeddings
+        OpenAiApi siliconflowApi = OpenAiApi.builder()
+                .baseUrl("https://api.siliconflow.cn")
+                .apiKey(siliconflowApiKey)
+                .build();
+
+        // 创建 Embedding 模型（4 参数构造函数）
+        return new OpenAiEmbeddingModel(
+                siliconflowApi,
+                MetadataMode.EMBED,
+                OpenAiEmbeddingOptions.builder()
+                        .model("BAAI/bge-m3")  // 免费的高质量中文 embedding 模型
+                        .build(),
+                RetryUtils.DEFAULT_RETRY_TEMPLATE
+        );
+    }
 
     @Bean
     public ChatMemory chatMemory() {
@@ -34,7 +77,8 @@ public class AIConfiguration implements WebMvcConfigurer {
     public ChatClient chatClient(ChatModel chatModel,
                                  ChatMemory chatMemory,
                                  PetClinicTools petClinicTools,
-                                 List<ToolCallbackProvider> toolCallbackProviders) {  // 使用自动配置的 ToolCallbackProvider
+                                 VectorStore vectorStore,  // 注入 VectorStore 用于 RAG
+                                 List<ToolCallbackProvider> toolCallbackProviders) {
 
         var builder = ChatClient.builder(chatModel)
                 .defaultSystem("""
@@ -46,7 +90,7 @@ public class AIConfiguration implements WebMvcConfigurer {
                     - get_pet_health_records: 根据宠物ID查询健康记录
                     - get_pet_appointments: 根据宠物ID查询预约记录
                     - search_pets: 根据关键词搜索宠物
-                    - search_users: 根据关键词搜索宠物诊所系统用户
+                    - search_petclinic_users: 根据关键词搜索宠物诊所系统用户
                     - count_pets_by_type: 统计各类型宠物数量
                     
                     ## 重要规则
@@ -58,10 +102,17 @@ public class AIConfiguration implements WebMvcConfigurer {
                     
                     ### 外部服务 (MCP)
                     - **地图服务**: 当用户问"天气"、"路线"、"附近的店"时 -> 自动调用 `maps_weather`, `maps_search_around` 等
+                    - **GitHub服务**: 当用户问代码仓库、Issue、PR相关问题时 -> 默认仓库为 zhangkai208/PetClinic，可查询仓库文件、Issue列表、提交记录等
                     """)
                 .defaultAdvisors(
                         new SimpleLoggerAdvisor(),
-                        MessageChatMemoryAdvisor.builder(chatMemory).build()
+                        MessageChatMemoryAdvisor.builder(chatMemory).build(),
+                        // RAG Advisor：自动检索知识库并添加到上下文 (Spring AI 1.1.2)
+                        QuestionAnswerAdvisor.builder(vectorStore)
+                                .searchRequest(SearchRequest.builder()
+                                        .topK(3)  // 返回最相关的3个文档
+                                        .build())
+                                .build()
                 )
                 .defaultTools(petClinicTools);  // 自定义 @Tool 工具
 

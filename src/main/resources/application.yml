@@ -38,18 +38,29 @@ spring:
         completions-path: /chat/completions
         options:
           model: deepseek-v3-2-251201
+      embedding:
+        enabled: false  # 禁用自动配置，使用自定义的硅基流动 EmbeddingModel
+
     mcp:
       client:
         stdio:
           servers-configuration: classpath:mcp-servers.json
 
+    vectorstore:
+      redis:
+        index-name: petclinic-vectors   # 正确的属性名是 index-name
+        prefix: "doc:"                   # 存入 Redis 的 key 前缀
+        initialize-schema: true          # 启动时自动帮你建索引结构
+
   data:
     redis:
+      # ⚠️ 注意：如果你在本地跑代码，这里填服务器公网IP；如果你打包部署到服务器，这里填 localhost
       host: localhost
       port: 6379
       database: 0
       timeout: 5000ms
-      lettuce:
+      client-type: jedis   # 使用 Jedis 客户端（Spring AI Redis VectorStore 需要）
+      jedis:
         pool:
           max-active: 8
           max-idle: 8
@@ -79,3 +90,7 @@ logging:
     com.zk.petclinic: debug
     org.springframework.web: info
     org.springframework.ai.chat.client.advisor: debug
+
+# 硅基流动 Embedding API 配置
+siliconflow:
+  api-key:

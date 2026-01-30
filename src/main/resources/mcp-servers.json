@@ -1,15 +1,23 @@
 {
   "mcpServers": {
     "amap": {
-      "command": "cmd.exe",
+      "command": "npx.cmd",
       "args": [
-        "/c",
-        "npx",
         "-y",
         "@amap/amap-maps-mcp-server"
       ],
       "env": {
-        "AMAP_MAPS_API_KEY": "0b923a7e2157a44486400901b3b72bac"
+        "AMAP_MAPS_API_KEY": ""
+      }
+    },
+    "github": {
+      "command": "npx.cmd",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": ""
       }
     }
   }

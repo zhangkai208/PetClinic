@@ -101,7 +101,8 @@ public class SecurityConfig {
                 // ========== 8. 通用管理接口 ==========
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/provider/**").hasAnyRole("PROVIDER", "ADMIN")
-                
+                    // 在 filterChain 方法中添加
+                    .requestMatchers("/knowledge/**").hasRole("ADMIN")
                 // ========== 9. 默认规则 ==========
                 // 其他接口需要认证（登录后即可访问，不限制角色）
                 .anyRequest().authenticated()

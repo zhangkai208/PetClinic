@@ -129,7 +129,7 @@ public class PetClinicTools {
      * 搜索用户
      */
     @Tool(description = "根据关键词搜索宠物诊所系统的用户，可匹配用户名或昵称信息")
-    public String search_users(
+    public String search_petclinic_users(
             @ToolParam(description = "搜索关键词（用户名或昵称）") String keyword
     ) {
         List<SysUser> users = sysUserService.searchUsers(keyword);
