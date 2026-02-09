@@ -69,6 +69,12 @@
                 <artifactId>spring-ai-advisors-vector-store</artifactId>
             </dependency>
 
+            <!-- Spring AI RAG (包含 RetrievalAugmentationAdvisor) -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-rag</artifactId>
+            </dependency>
+
             <dependency>
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
