@@ -333,7 +333,8 @@
         <div class="qrcode-wrapper">
           <div class="qrcode-item">
             <img 
-              src="http://zhangkairedzack.top/%E5%BC%A0%E6%81%BA%E7%9A%84%E6%94%B6%E6%AC%BE%E7%A0%81.jpg" 
+              src="http://oss.zhangkairedzack.top/%E5%BC%A0%E6%81%BA%E7%9A%84%E6%94%B6%E6%AC%BE%E7%A0%81.jpg" 
+              
               alt="微信付款码" 
               class="qrcode-image"
             />
@@ -341,7 +342,7 @@
           </div>
           <div class="qrcode-item">
             <img 
-              src="http://zhangkairedzack.top/%E6%94%AF%E4%BB%98%E5%AE%9D%E4%BB%98%E6%AC%BE%E7%A0%81.jpg" 
+              src="http://oss.zhangkairedzack.top/%E6%94%AF%E4%BB%98%E5%AE%9D%E4%BB%98%E6%AC%BE%E7%A0%81.jpg" 
               alt="支付宝付款码" 
               class="qrcode-image"
             />
