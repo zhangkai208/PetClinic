@@ -2,11 +2,6 @@ package com.zk.petclinic.config;
 
 import com.zk.petclinic.tools.PetClinicTools;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.openai.OpenAiEmbeddingModel;
-import org.springframework.ai.openai.OpenAiEmbeddingOptions;
-import org.springframework.ai.openai.api.OpenAiApi;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
@@ -19,46 +14,12 @@ import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
-import org.springframework.ai.document.MetadataMode;
-import org.springframework.ai.retry.RetryUtils;
-
 @Configuration
 public class AIConfiguration implements WebMvcConfigurer {
-
-        // 硅基流动 API 配置
-        @Value("${siliconflow.api-key}")
-        private String siliconflowApiKey;
-
-        /**
-         * 使用硅基流动的 BAAI/bge-m3 作为 Embedding 模型（免费）
-         * 按照 Spring AI 1.1.2 官方文档创建
-         * 
-         * @Primary 确保优先使用此 Bean，覆盖自动配置
-         */
-        @Bean
-        @Primary
-        public EmbeddingModel embeddingModel() {
-                // 创建硅基流动 API 客户端（OpenAI 兼容）
-                // 注意：baseUrl 不要包含 /v1，因为 Spring AI 默认会添加 /v1/embeddings
-                OpenAiApi siliconflowApi = OpenAiApi.builder()
-                                .baseUrl("https://api.siliconflow.cn")
-                                .apiKey(siliconflowApiKey)
-                                .build();
-
-                // 创建 Embedding 模型（4 参数构造函数）
-                return new OpenAiEmbeddingModel(
-                                siliconflowApi,
-                                MetadataMode.EMBED,
-                                OpenAiEmbeddingOptions.builder()
-                                                .model("BAAI/bge-m3") // 免费的高质量中文 embedding 模型
-                                                .build(),
-                                RetryUtils.DEFAULT_RETRY_TEMPLATE);
-        }
 
         @Bean
         public ChatMemory chatMemory() {
