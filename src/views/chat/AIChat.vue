@@ -71,7 +71,26 @@
               <div v-else class="ai-avatar">🤖</div>
             </div>
             <div class="message-content">
-              <div class="message-bubble" v-html="formatMessage(msg.content)"></div>
+              <template v-if="msg.messageType === 'image' && msg.mediaUrl">
+                <div class="message-bubble image-bubble">
+                  <div class="image-caption">{{ msg.content || '我为你生成了一张图片' }}</div>
+                  <el-image
+                    :src="msg.mediaUrl"
+                    fit="contain"
+                    class="chat-image"
+                    :preview-src-list="[msg.mediaUrl]"
+                    preview-teleported
+                  />
+                  <div class="image-actions">
+                    <el-button size="small" type="primary" text @click="downloadImage(msg.mediaUrl)">
+                      下载图片
+                    </el-button>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <div class="message-bubble" v-html="formatMessage(msg.content)"></div>
+              </template>
             </div>
           </div>
           
@@ -147,6 +166,7 @@ const isStreaming = ref(false)
 const streamingContent = ref('')
 const messagesContainer = ref(null)
 let cancelStream = null
+const IMAGE_PREFIX = '__IMAGE__'
 
 // 初始化
 onMounted(() => {
@@ -194,13 +214,18 @@ const createNewConversation = async () => {
 
 // 选择会话
 const selectConversation = async (conv) => {
+  if (cancelStream) {
+    cancelStream()
+    cancelStream = null
+  }
+  isStreaming.value = false
   currentConversationId.value = conv.id
   messages.value = []
   streamingContent.value = ''
   
   try {
     const res = await getMessages(conv.id)
-    messages.value = res.data || []
+    messages.value = (res.data || []).map(normalizeMessage)
   } catch (e) {
     console.error('加载消息失败:', e)
   }
@@ -219,6 +244,12 @@ const handleDeleteConversation = async (id) => {
     await loadConversations()
     
     if (currentConversationId.value === id) {
+      if (cancelStream) {
+        cancelStream()
+        cancelStream = null
+      }
+      isStreaming.value = false
+      streamingContent.value = ''
       currentConversationId.value = null
       messages.value = []
     }
@@ -237,10 +268,12 @@ const sendMessage = async () => {
   if (!message || isStreaming.value || !currentConversationId.value) return
   
   // 添加用户消息到列表
-  messages.value.push({
+  messages.value.push(normalizeMessage({
     role: 'user',
-    content: message
-  })
+    content: message,
+    messageType: 'text',
+    mediaUrl: ''
+  }))
   
   inputMessage.value = ''
   isStreaming.value = true
@@ -256,12 +289,23 @@ const sendMessage = async () => {
     },
     // onComplete
     () => {
-      // 将流式内容添加到消息列表
-      if (streamingContent.value) {
-        messages.value.push({
+      const finalContent = (streamingContent.value || '').trim()
+      const imagePayload = parseImagePayload(finalContent)
+
+      if (imagePayload) {
+        messages.value.push(normalizeMessage({
           role: 'assistant',
-          content: streamingContent.value
-        })
+          content: '我为你生成了一张图片',
+          messageType: 'image',
+          mediaUrl: imagePayload.url
+        }))
+      } else if (finalContent) {
+        messages.value.push(normalizeMessage({
+          role: 'assistant',
+          content: finalContent,
+          messageType: 'text',
+          mediaUrl: ''
+        }))
       }
       streamingContent.value = ''
       isStreaming.value = false
@@ -269,7 +313,9 @@ const sendMessage = async () => {
     },
     // onError
     (err) => {
+      console.error('AI回复出错:', err)
       ElMessage.error('AI回复出错，请重试')
+      streamingContent.value = ''
       isStreaming.value = false
       cancelStream = null
     }
@@ -293,6 +339,48 @@ const formatMessage = (content) => {
     .replace(/\n/g, '<br>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/`(.*?)`/g, '<code>$1</code>')
+}
+
+// 兼容后端可能返回的不同字段命名
+const normalizeMessage = (msg) => {
+  const type = (msg?.messageType || msg?.message_type || 'text').toLowerCase()
+  return {
+    ...msg,
+    messageType: type,
+    mediaUrl: msg?.mediaUrl || msg?.media_url || ''
+  }
+}
+
+// 解析后端图片协议: __IMAGE__<url>||<filename>
+const parseImagePayload = (text) => {
+  const rawText = (text || '').trim()
+  if (!rawText.startsWith(IMAGE_PREFIX)) return null
+  const payload = rawText.substring(IMAGE_PREFIX.length)
+  const [url, fileName] = payload.split('||')
+  if (!url) return null
+  return {
+    url: url.trim(),
+    fileName: (fileName || `petclinic-${Date.now()}.png`).trim()
+  }
+}
+
+const downloadImage = async (url) => {
+  if (!url) return
+  try {
+    const resp = await fetch(url)
+    if (!resp.ok) throw new Error('download failed')
+    const blob = await resp.blob()
+    const objectUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    a.download = `petclinic-${Date.now()}.png`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(objectUrl)
+  } catch (e) {
+    ElMessage.error('下载失败，请稍后重试')
+  }
 }
 </script>
 
@@ -558,6 +646,30 @@ const formatMessage = (content) => {
   :deep(strong) {
     font-weight: 600;
   }
+}
+
+.image-bubble {
+  background: #f8fafc !important;
+  padding: 10px;
+}
+
+.image-caption {
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.chat-image {
+  width: 260px;
+  max-width: 100%;
+  border-radius: 8px;
+  display: block;
+  background: #fff;
+}
+
+.image-actions {
+  margin-top: 8px;
+  text-align: right;
 }
 
 @keyframes blink {
