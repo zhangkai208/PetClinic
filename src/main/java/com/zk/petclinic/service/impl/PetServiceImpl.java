@@ -71,7 +71,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
     public String uploadFile(MultipartFile file) throws IOException {
         final String originalFilename = file.getOriginalFilename();
         assert originalFilename != null;
-        final String fileName = UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
+        final String fileName ="avatar/" + UUID.randomUUID().toString() + originalFilename.substring(0, originalFilename.lastIndexOf("."));
         return QiniuOssUtil.uploadFile(fileName, file.getInputStream());
     }
 
@@ -91,7 +91,7 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet>
                 String originalFilename = file.getOriginalFilename();
                 if (originalFilename != null) {
                     String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-                    String fileName = UUID.randomUUID().toString() + ext;
+                    String fileName ="photos/" + UUID.randomUUID().toString() + ext;
                     String url = QiniuOssUtil.uploadFile(fileName, file.getInputStream());
                     urls.add(url);
                 }

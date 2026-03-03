@@ -15,6 +15,8 @@ public interface ChatMessageService extends IService<ChatMessage> {
     List<ChatMessage> getChatMessageByConversationId(Long conversationId);
     
     // 保存消息方法
+    ChatMessage saveMessage(Long conversationId, String role, String content,
+                                   String messageType, String mediaUrl, String extraJson);
     ChatMessage saveMessage(Long conversationId, String role, String content);
     
     // 根据会话ID删除该会话下的消息

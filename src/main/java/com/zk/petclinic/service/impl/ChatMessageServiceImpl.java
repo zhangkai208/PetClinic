@@ -44,18 +44,27 @@ public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatM
      * @return 返回保存后的消息对象
      */
     @Override
-    public ChatMessage saveMessage(Long conversationId, String role, String content) {
+    public ChatMessage saveMessage(Long conversationId, String role, String content,
+                                   String messageType, String mediaUrl, String extraJson) {
         // 创建新的消息对象
         ChatMessage message = new ChatMessage();
         // 设置消息属性
         message.setConversationId(conversationId);
         message.setRole(role);
         message.setContent(content);
+        message.setMessageType(messageType);
+        message.setMediaUrl(mediaUrl);
+        message.setExtraJson(extraJson);
         message.setCreatedAt(new Date());
         // 保存消息到数据库
         this.save(message);
         // 返回保存后的消息对象
         return message;
+    }
+
+    @Override
+    public ChatMessage saveMessage(Long conversationId, String role, String content) {
+        return saveMessage(conversationId, role, content, "text", null, null);
     }
 
     /**

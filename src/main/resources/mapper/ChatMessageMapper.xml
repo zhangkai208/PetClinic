@@ -10,9 +10,12 @@
             <result property="role" column="role" />
             <result property="content" column="content" />
             <result property="createdAt" column="created_at" />
+            <result property="mediaUrl" column="media_url" />
+            <result property="extraJson" column="extra_json" />
+            <result property="createdAt" column="created_at" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,conversation_id,role,content,created_at
+        id,conversation_id,role,content,message_type,media_url,extra_json,created_at
     </sql>
 </mapper>

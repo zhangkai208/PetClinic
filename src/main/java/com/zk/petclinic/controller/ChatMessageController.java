@@ -4,10 +4,12 @@ package com.zk.petclinic.controller;
 import com.zk.petclinic.domain.ChatConversation;
 import com.zk.petclinic.domain.ChatMessage;
 import com.zk.petclinic.domain.SysUser;
+import com.zk.petclinic.domain.dto.IntentResult;
 import com.zk.petclinic.service.ChatConversationService;
 import com.zk.petclinic.service.ChatMessageService;
 import com.zk.petclinic.service.SysUserService;
 import com.zk.petclinic.enums.SysUserRoleType;
+import com.zk.petclinic.service.impl.ChatAiServiceImpl;
 import com.zk.petclinic.util.ResultUtil;
 import com.zk.petclinic.util.ThreadLocalUtil;
 import org.springframework.ai.chat.client.ChatClient;
@@ -15,6 +17,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -30,6 +33,9 @@ public class ChatMessageController {
     private ChatConversationService chatConversationService;
     @Autowired
     private SysUserService sysUserService;
+    @Autowired
+    private ChatAiServiceImpl chatAiService;
+    private static final String IMAGE_PREFIX = "__IMAGE__";
 
     /**
      * 获取当前登录用户ID
@@ -63,7 +69,34 @@ public class ChatMessageController {
             return Flux.just("无权访问该会话");
         }
 
-        chatMessageService.saveMessage(conversationId, "user", message);
+        // 先存用户消息
+        chatMessageService.saveMessage(conversationId, "user", message, "text", null, null);
+
+        // LLM 判断是否图片请求
+        IntentResult intent = chatAiService.detectIntent(message);
+        if (intent.image) {
+            String prompt = intent.prompt;
+            if (prompt == null || prompt.isBlank()) {
+                prompt = message;
+            }
+            String finalPrompt = prompt;
+
+            // 图片分支：生成图 -> 存 image 消息 -> 返回给前端协议
+            return Mono.fromCallable(() -> {
+                String imageUrl = chatAiService.generateImageAndGetUrl(finalPrompt, conversationId);
+                String extraJson = chatAiService.buildImageExtraJson(finalPrompt);
+                chatMessageService.saveMessage(
+                        conversationId,
+                        "assistant",
+                        "我为你生成了一张图片",
+                        "image",
+                        imageUrl,
+                        extraJson
+                );
+                return IMAGE_PREFIX + imageUrl + "||petclinic-image.png";
+            }).onErrorReturn("图片生成失败，请稍后重试")
+                    .flux();
+        }
 
         // 用于收集AI回复
         StringBuilder aiResponse = new StringBuilder();
@@ -96,7 +129,14 @@ public class ChatMessageController {
                 .doOnComplete(() -> {
                     // 流结束后保存AI回复到数据库
                     if (aiResponse.length() > 0) {
-                        chatMessageService.saveMessage(conversationId, "assistant", aiResponse.toString());
+                        chatMessageService.saveMessage(
+                                conversationId,
+                                "assistant",
+                                aiResponse.toString(),
+                                "text",
+                                null,
+                                null
+                        );
                     }
                 });
     }
@@ -126,3 +166,4 @@ public class ChatMessageController {
         return ResultUtil.success("删除成功");
     }
 }
+

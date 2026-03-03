@@ -32,14 +32,18 @@ spring:
 
   ai:
     openai:
-      base-url: https://ark.cn-beijing.volces.com/api/v3
+      base-url: https://api.siliconflow.cn
       api-key:
       chat:
-        completions-path: /chat/completions
         options:
-          model: deepseek-v3-2-251201
+          model: Qwen/Qwen3-8B
       embedding:
-        enabled: false  # 禁用自动配置，使用自定义的硅基流动 EmbeddingModel
+        options:
+          model: BAAI/bge-m3
+      image:
+        enabled: true
+        options:
+          model: Kwai-Kolors/Kolors
 
     mcp:
       client:
@@ -91,6 +95,3 @@ logging:
     org.springframework.web: info
     org.springframework.ai.chat.client.advisor: debug
 
-# 硅基流动 Embedding API 配置
-siliconflow:
-  api-key:
